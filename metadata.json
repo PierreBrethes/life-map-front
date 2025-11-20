@@ -1,0 +1,5 @@
+{
+  "name": "LifeMap",
+  "description": "A 3D Isometric Life Dashboard visualizing finances, health, and assets.",
+  "requestFramePermissions": []
+}
