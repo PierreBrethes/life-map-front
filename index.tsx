@@ -8,8 +8,9 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+
+// React.StrictMode removed to prevent WebGL Context Lost issues in development
+// with 3D Canvases being mounted/unmounted rapidly.
 root.render(
-  <React.StrictMode>
     <App />
-  </React.StrictMode>
 );

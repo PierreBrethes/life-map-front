@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { ContactShadows, Environment, SoftShadows } from '@react-three/drei';
+import { ContactShadows, Environment } from '@react-three/drei';
 import Island from './Island';
 import CameraRig from './CameraRig';
 import Connections from './Connections';
@@ -31,35 +31,40 @@ const Experience: React.FC<ExperienceProps> = ({ data, dependencies, selection, 
   }, [selection, data]);
 
   return (
-    <Canvas shadows className="w-full h-full" onPointerMissed={handleMiss}>
+    <Canvas 
+      shadows 
+      dpr={[1, 2]} // Handle high-DPI screens without killing performance
+      className="w-full h-full" 
+      onPointerMissed={handleMiss}
+      gl={{ preserveDrawingBuffer: true }} // Helps with stability
+    >
       {/* Cinematic Camera Controller */}
       <CameraRig targetPosition={cameraTarget} />
 
-      {/* --- GESTION DES OMBRES PORTÉES (Soleil) --- */}
-      <SoftShadows size={20} focus={0.5} samples={12} />
-
       {/* --- LUMIÈRES --- */}
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={0.6} />
       
       <directionalLight
-        position={[8, 20, 8]}
-        intensity={2.5}
+        position={[10, 20, 10]}
+        intensity={2.0}
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[1024, 1024]} // Reasonable shadow map size
         shadow-bias={-0.0005}
       />
       
-      <directionalLight position={[-5, 5, -5]} intensity={0.4} color="#e0e7ff" />
+      <directionalLight position={[-5, 5, -5]} intensity={0.5} color="#e0e7ff" />
 
       <Environment preset="city" />
 
-      {/* --- OMBRES DE CONTACT (Ancrage au sol) --- */}
+      {/* --- OMBRES DE CONTACT (Optimized) --- */}
+      {/* Removed SoftShadows to prevent WebGL Context Lost on some GPUs */}
       <ContactShadows 
         position={[0, -0.05, 0]} 
-        opacity={0.6}     
+        opacity={0.5}     
         scale={60}        
-        blur={2.5}        
-        far={4} 
+        blur={2}        
+        far={10} 
+        resolution={512} // Lower resolution for better stability
         color="#000000" 
       />
 
