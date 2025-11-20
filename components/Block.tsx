@@ -1,7 +1,7 @@
 
 import React, { useRef, useState, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Text, Billboard } from '@react-three/drei';
+import { Text, Billboard, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { LifeItem, ItemType, ItemStatus, AssetType } from '../types';
 
@@ -299,17 +299,13 @@ const Block: React.FC<BlockProps> = ({ item, color, position, categoryName, isSe
       {renderAsset()}
       
       {/* Hover Label */}
-      <group position={[0, 2, 0]} visible={hovered || isSelected}>
-         <Billboard>
-             <mesh>
-                <planeGeometry args={[item.name.length * 0.15 + 0.2, 0.4]} />
-                <meshBasicMaterial color="black" transparent opacity={0.7} />
-             </mesh>
-            <Text fontSize={0.15} color="white" anchorX="center" anchorY="middle" fontWeight={600}>
-                {item.name.toUpperCase()}
-            </Text>
-         </Billboard>
-      </group>
+      {(hovered || isSelected) && (
+          <Html position={[0, 2.2, 0]} center style={{ pointerEvents: 'none' }} zIndexRange={[100, 0]}>
+              <div className="px-3 py-1.5 bg-gray-900/90 text-white text-xs font-bold rounded-lg shadow-xl backdrop-blur-md border border-white/20 whitespace-nowrap transform -translate-y-2 transition-all">
+                  {item.name.toUpperCase()}
+              </div>
+          </Html>
+      )}
     </group>
   );
 };
