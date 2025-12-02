@@ -1,3 +1,4 @@
+
 import { Category } from '../types';
 
 export const ITEM_SPACING = 1.5;
@@ -37,14 +38,26 @@ export const getItemLocalPosition = (itemIndex: number, totalItems: number): [nu
 export const getItemWorldPosition = (
   categoryName: string, 
   itemName: string, 
-  data: Category[]
+  data: Category[],
+  itemId?: string
 ): [number, number, number] | null => {
   
   const catIndex = data.findIndex(c => c.category === categoryName);
   if (catIndex === -1) return null;
 
   const category = data[catIndex];
-  const itemIndex = category.items.findIndex(i => i.name === itemName);
+  
+  let itemIndex = -1;
+  
+  if (itemId) {
+    itemIndex = category.items.findIndex(i => i.id === itemId);
+  }
+
+  // Fallback to name search if ID not provided or not found
+  if (itemIndex === -1) {
+    itemIndex = category.items.findIndex(i => i.name === itemName);
+  }
+  
   if (itemIndex === -1) return null;
 
   const islandPos = getIslandPosition(catIndex, data.length);

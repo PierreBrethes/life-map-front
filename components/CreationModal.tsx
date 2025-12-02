@@ -201,6 +201,7 @@ const CreationModal: React.FC<CreationModalProps> = ({ mode, categories, initial
                             className="w-full px-3 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none appearance-none text-gray-900 font-medium text-sm"
                         >
                             <option value="default">Défaut</option>
+                            <option value="people">Personne / Humain</option>
                             <option value="sport">Sport (Haltère/Balle)</option>
                             <option value="tech">Tech (Écran)</option>
                             <option value="travel">Voyage (Avion)</option>

@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { ContactShadows, Environment } from '@react-three/drei';
@@ -12,82 +13,121 @@ interface ExperienceProps {
   dependencies: Dependency[];
   selection: SelectionState | null;
   setSelection: (sel: SelectionState | null) => void;
+  onBlockClick: (categoryName: string, item: LifeItem) => void;
   showConnections: boolean;
+  isDarkMode: boolean;
+  selectedDependencyId: string | null;
+  onSelectDependency: (id: string | null) => void;
+  onDeleteDependency: (id: string) => void;
 }
 
-const Experience: React.FC<ExperienceProps> = ({ data, dependencies, selection, setSelection, showConnections }) => {
-  const handleSelect = (categoryName: string, item: LifeItem) => {
-    setSelection({ categoryName, item });
-  };
+// Ocean Component
+const Ocean = ({ isDarkMode }: { isDarkMode: boolean }) => (
+  <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.2, 0]}>
+    <planeGeometry args={[100, 100, 20, 20]} />
+    <meshStandardMaterial 
+      color={isDarkMode ? "#0f172a" : "#bae6fd"} 
+      opacity={isDarkMode ? 0.8 : 0.6}
+      transparent
+      roughness={0.1}
+      metalness={0.1}
+    />
+  </mesh>
+);
 
+const Experience: React.FC<ExperienceProps> = ({ 
+  data, 
+  dependencies, 
+  selection, 
+  setSelection, 
+  onBlockClick,
+  showConnections, 
+  isDarkMode,
+  selectedDependencyId,
+  onSelectDependency,
+  onDeleteDependency
+}) => {
+  
   const handleMiss = () => {
     setSelection(null);
+    onSelectDependency(null);
   };
 
-  // Calculate target position for the camera based on selection using the new utility
+  // Calculate target position for the camera based on selection
   const cameraTarget = useMemo<[number, number, number] | null>(() => {
     if (!selection) return null;
-    return getItemWorldPosition(selection.categoryName, selection.item.name, data);
+    return getItemWorldPosition(selection.categoryName, selection.item.name, data, selection.item.id);
   }, [selection, data]);
 
   return (
     <Canvas 
       shadows 
-      dpr={[1, 2]} // Handle high-DPI screens without killing performance
+      dpr={[1, 2]} 
       className="w-full h-full" 
       onPointerMissed={handleMiss}
-      gl={{ preserveDrawingBuffer: true }} // Helps with stability
+      gl={{ preserveDrawingBuffer: true }} 
     >
       {/* Cinematic Camera Controller */}
       <CameraRig targetPosition={cameraTarget} />
 
-      {/* --- LUMIÈRES --- */}
-      <ambientLight intensity={0.6} />
+      {/* --- LIGHTING & ATMOSPHERE --- */}
+      <color attach="background" args={[isDarkMode ? '#020617' : '#f0f9ff']} />
+      <fog attach="fog" args={[isDarkMode ? '#020617' : '#f0f9ff', 20, 90]} />
+
+      <ambientLight intensity={isDarkMode ? 0.3 : 0.6} />
       
       <directionalLight
         position={[10, 20, 10]}
-        intensity={2.0}
+        intensity={isDarkMode ? 1.0 : 2.0}
         castShadow
-        shadow-mapSize={[1024, 1024]} // Reasonable shadow map size
+        shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0005}
       />
       
-      <directionalLight position={[-5, 5, -5]} intensity={0.5} color="#e0e7ff" />
+      <directionalLight position={[-5, 5, -5]} intensity={0.5} color={isDarkMode ? "#4f46e5" : "#e0e7ff"} />
 
-      <Environment preset="city" />
+      <Environment preset={isDarkMode ? "night" : "city"} />
 
-      {/* --- OMBRES DE CONTACT (Optimized) --- */}
-      {/* Removed SoftShadows to prevent WebGL Context Lost on some GPUs */}
+      {/* Ocean Floor */}
+      <Ocean isDarkMode={isDarkMode} />
+
+      {/* --- CONTACT SHADOWS --- */}
       <ContactShadows 
         position={[0, -0.05, 0]} 
-        opacity={0.5}     
+        opacity={isDarkMode ? 0.3 : 0.5}     
         scale={60}        
         blur={2}        
         far={10} 
-        resolution={512} // Lower resolution for better stability
+        resolution={512} 
         color="#000000" 
       />
 
       {/* Islands Generation */}
       <group position={[0, 0, 0]}>
         {data.map((category, index) => {
-          // Use utility for consistent positioning
           const position = getIslandPosition(index, data.length);
-
           return (
             <Island
               key={category.category}
               category={category}
               position={position}
               selection={selection}
-              onSelect={handleSelect}
+              onSelect={onBlockClick}
             />
           );
         })}
       </group>
 
       {/* Links / Connections Layer */}
-      {showConnections && <Connections data={data} dependencies={dependencies} />}
+      {showConnections && (
+        <Connections 
+            data={data} 
+            dependencies={dependencies} 
+            selectedId={selectedDependencyId}
+            onSelect={onSelectDependency}
+            onDelete={onDeleteDependency}
+        />
+      )}
 
     </Canvas>
   );

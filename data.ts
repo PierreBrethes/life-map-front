@@ -22,7 +22,7 @@ export const DATA: Category[] = [
   },
   { 
     category: 'Immobilier', 
-    color: '#ec4899', // Pink
+    color: '#14b8a6', // Teal (Better fit than Pink)
     icon: 'Home',
     items: [
       { id: 'i1', name: 'Maison', value: 'Nantes', type: 'text', status: 'ok', assetType: 'home' },
@@ -34,7 +34,7 @@ export const DATA: Category[] = [
     color: '#f59e0b', // Amber
     icon: 'Users',
     items: [
-        { id: 'fa1', name: 'Enfants', value: '2', type: 'text', status: 'ok', assetType: 'nature' },
+        { id: 'fa1', name: 'Enfants', value: '2', type: 'text', status: 'ok', assetType: 'people' },
         { id: 'fa2', name: 'Vacances', value: 'Japon', type: 'text', status: 'ok', assetType: 'travel' }
     ]
   }

@@ -4,18 +4,21 @@ import { GoogleGenAI, Type } from "@google/genai";
 // Fallback heuristique si pas de clé API ou erreur
 const localHeuristic = (name: string, context: 'category' | 'item') => {
   const lower = name.toLowerCase();
+  // Matches colors available in CreationModal palette
   if (lower.includes('sport') || lower.includes('tennis') || lower.includes('foot') || lower.includes('gym')) 
-    return { icon: 'Dumbbell', assetType: 'sport', color: '#f97316' };
+    return { icon: 'Dumbbell', assetType: 'sport', color: '#ef4444' }; // Red
   if (lower.includes('voyage') || lower.includes('avion') || lower.includes('trip') || lower.includes('vacances')) 
-    return { icon: 'Plane', assetType: 'travel', color: '#0ea5e9' };
+    return { icon: 'Plane', assetType: 'travel', color: '#3b82f6' }; // Blue
   if (lower.includes('tech') || lower.includes('ordi') || lower.includes('code') || lower.includes('apple')) 
-    return { icon: 'Monitor', assetType: 'tech', color: '#6366f1' };
+    return { icon: 'Monitor', assetType: 'tech', color: '#6366f1' }; // Indigo
   if (lower.includes('maison') || lower.includes('immo') || lower.includes('loyer')) 
-    return { icon: 'Home', assetType: 'home', color: '#ec4899' };
+    return { icon: 'Home', assetType: 'home', color: '#14b8a6' }; // Teal
   if (lower.includes('santé') || lower.includes('doc') || lower.includes('hopital')) 
-    return { icon: 'Heart', assetType: 'health', color: '#10b981' };
+    return { icon: 'Heart', assetType: 'health', color: '#10b981' }; // Emerald
   if (lower.includes('banque') || lower.includes('argent') || lower.includes('bourse')) 
-    return { icon: 'Wallet', assetType: 'finance', color: '#eab308' };
+    return { icon: 'Wallet', assetType: 'finance', color: '#6366f1' }; // Indigo
+  if (lower.includes('maman') || lower.includes('papa') || lower.includes('ami') || lower.includes('enfant') || lower.includes('famille')) 
+    return { icon: 'User', assetType: 'people', color: '#f59e0b' }; // Amber
   
   return { icon: 'Box', assetType: 'default', color: '#94a3b8' };
 };
@@ -34,9 +37,9 @@ export const suggestAttributes = async (name: string, context: 'category' | 'ite
       contents: `Suggest visual attributes for a 3D dashboard item named "${name}". 
       Context: ${context}.
       
-      Available Assets: 'finance', 'health', 'home', 'nature', 'sport', 'tech', 'travel', 'default'.
-      Available Colors: Hex codes.
-      Available Icons: Lucide React icon names (e.g., 'Activity', 'Home', 'Dumbbell', 'Plane', 'Cpu', 'Wallet', 'TreeDeciduous').`,
+      Available Assets: 'finance', 'health', 'home', 'nature', 'sport', 'tech', 'travel', 'people', 'default'.
+      Available Colors: Hex codes (Prefer: #6366f1, #10b981, #ec4899, #f59e0b, #ef4444, #3b82f6, #8b5cf6, #14b8a6).
+      Available Icons: Lucide React icon names (e.g., 'Activity', 'Home', 'Dumbbell', 'Plane', 'Cpu', 'Wallet', 'TreeDeciduous', 'User').`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
