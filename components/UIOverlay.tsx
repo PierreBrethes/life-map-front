@@ -47,8 +47,12 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{categoryName: string, item: LifeItem}[]>([]);
 
-  // Local state for notification label editing
+  // Local state for edits
   const [customLabel, setCustomLabel] = useState('');
+  
+  // Value Editing State
+  const [isEditingValue, setIsEditingValue] = useState(false);
+  const [editValue, setEditValue] = useState('');
 
   const isDark = settings.theme === 'dark';
 
@@ -72,6 +76,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     if (selection) {
       setActiveData(selection);
       setCustomLabel(selection.item.notificationLabel || '');
+      setEditValue(selection.item.value);
+      setIsEditingValue(false);
     }
   }, [selection]);
 
@@ -143,6 +149,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     if (activeData) {
         onUpdateItem(activeData.categoryName, activeData.item.id, { notificationLabel: customLabel });
     }
+  };
+
+  const handleValueUpdate = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (activeData) {
+          onUpdateItem(activeData.categoryName, activeData.item.id, { value: editValue });
+          setIsEditingValue(false);
+      }
   };
 
   return (
@@ -304,7 +318,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                 {/* TOGGLE CONNECTIONS BUTTON */}
                 <button 
                     onClick={onToggleConnections}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 ${
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${
                         showConnections 
                         ? (isDark ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/50' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200')
                         : (isDark ? 'bg-slate-800 text-slate-500 hover:bg-slate-700' : 'bg-gray-50 text-gray-400 hover:bg-gray-100')
@@ -319,9 +333,9 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                 {/* ADD CONNECTION BUTTON */}
                 <button 
                     onClick={connectionMode === 'idle' ? onStartConnection : onCancelConnection}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${
                         connectionMode !== 'idle'
-                        ? 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                        ? 'bg-red-500 hover:bg-red-600 text-white shadow-md shadow-red-500/20'
                         : (isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-700')
                     }`}
                 >
@@ -335,7 +349,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                 {/* ADD CATEGORY BUTTON */}
                 <button 
                     onClick={() => setModalMode('category')}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-slate-200' : 'bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700'}`}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-slate-200' : 'bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700'}`}
                 >
                     <Icons.Layers size={18} />
                     <span>Nouvelle Île</span>
@@ -344,7 +358,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                 {/* ADD ITEM BUTTON */}
                 <button 
                     onClick={() => setModalMode('item')}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm transition-all shadow-lg shadow-gray-900/20 active:scale-95 whitespace-nowrap"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm transition-all shadow-lg shadow-gray-900/20 active:scale-95 whitespace-nowrap"
                 >
                     <Icons.Plus size={18} />
                     <span>Ajouter Bloc</span>
@@ -388,7 +402,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                     <button 
-                        onClick={onDelete}
+                        onClick={(e) => { e.stopPropagation(); onDelete(); }}
                         className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-red-900/30 text-slate-400 hover:text-red-400' : 'hover:bg-red-50 text-gray-400 hover:text-red-600'}`}
                         title="Supprimer"
                     >
@@ -406,11 +420,56 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
                 <div className="p-8 flex-1 overflow-y-auto space-y-8">
                 
-                <div className={`p-6 rounded-2xl border shadow-sm relative overflow-hidden ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-gray-100'}`}>
-                    <p className={`text-sm mb-1 font-medium ${textSecondary}`}>Valeur Actuelle</p>
-                    <p className={`text-5xl font-bold tracking-tight break-all ${textPrimary}`}>
-                    {formatValue(activeData.item.value, activeData.item.type)}
-                    </p>
+                <div className={`p-6 rounded-2xl border shadow-sm relative overflow-hidden transition-colors ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-gray-100'}`}>
+                    <div className="flex justify-between items-center mb-1">
+                        <p className={`text-sm font-medium ${textSecondary}`}>Valeur Actuelle</p>
+                        {!isEditingValue ? (
+                             <button 
+                                onClick={() => setIsEditingValue(true)}
+                                className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400' : 'hover:bg-indigo-50 text-gray-400 hover:text-indigo-600'}`}
+                                title="Modifier la valeur"
+                             >
+                                <Icons.Edit2 size={14} />
+                             </button>
+                        ) : (
+                            <div className="flex gap-1">
+                                <button 
+                                    onClick={handleValueUpdate}
+                                    className="p-1.5 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600"
+                                    title="Valider"
+                                >
+                                    <Icons.Check size={14} />
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        setIsEditingValue(false);
+                                        setEditValue(activeData.item.value);
+                                    }}
+                                    className={`p-1.5 rounded-lg ${isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'}`}
+                                    title="Annuler"
+                                >
+                                    <Icons.X size={14} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {isEditingValue ? (
+                        <form onSubmit={handleValueUpdate}>
+                            <input
+                                type="text"
+                                value={editValue}
+                                onChange={(e) => setEditValue(e.target.value)}
+                                className={`w-full text-4xl font-bold bg-transparent outline-none border-b-2 py-1 ${isDark ? 'border-indigo-500/50 text-white' : 'border-indigo-500/30 text-gray-900'} focus:border-indigo-500 transition-colors`}
+                                autoFocus
+                            />
+                            <p className="text-xs text-indigo-500 mt-2 font-medium">Appuyez sur Entrée pour valider</p>
+                        </form>
+                    ) : (
+                        <p className={`text-5xl font-bold tracking-tight break-all ${textPrimary}`}>
+                            {formatValue(activeData.item.value, activeData.item.type)}
+                        </p>
+                    )}
                 </div>
 
                 {/* NOTIFICATION MANAGEMENT */}
@@ -420,14 +479,12 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                             <h3 className={`text-xs font-bold uppercase tracking-widest ${textSecondary} flex items-center gap-2`}>
                                 <Icons.BellRing size={12}/> Notification
                             </h3>
-                            {activeData.item.status !== 'ok' && (
-                                <button
-                                    onClick={() => onUpdateItem(activeData.categoryName, activeData.item.id, { notificationDismissed: !activeData.item.notificationDismissed })}
-                                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${!activeData.item.notificationDismissed ? 'bg-red-500' : 'bg-gray-300'}`}
-                                >
-                                    <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${!activeData.item.notificationDismissed ? 'translate-x-5' : 'translate-x-1'}`} />
-                                </button>
-                            )}
+                            <button
+                                onClick={() => onUpdateItem(activeData.categoryName, activeData.item.id, { notificationDismissed: !activeData.item.notificationDismissed })}
+                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${!activeData.item.notificationDismissed ? 'bg-red-500' : 'bg-gray-300'}`}
+                            >
+                                <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${!activeData.item.notificationDismissed ? 'translate-x-5' : 'translate-x-1'}`} />
+                            </button>
                          </div>
 
                          {/* Custom Label Input */}

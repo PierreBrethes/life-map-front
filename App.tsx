@@ -2,6 +2,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Experience from './components/Experience';
 import UIOverlay from './components/UIOverlay';
+import OnboardingWizard from './components/OnboardingWizard';
 import { SelectionState, Category, LifeItem, Dependency, UserSettings } from './types';
 import { DATA as INITIAL_DATA, INITIAL_DEPENDENCIES } from './data';
 import { ModalMode } from './components/CreationModal';
@@ -13,7 +14,11 @@ const App: React.FC = () => {
   const [data, setData] = useState<Category[]>(() => {
     try {
       const saved = localStorage.getItem('lifemap_data');
-      return saved ? JSON.parse(saved) : INITIAL_DATA;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed;
+      }
+      return INITIAL_DATA;
     } catch (e) {
       console.error("Failed to load data", e);
       return INITIAL_DATA;
@@ -70,12 +75,22 @@ const App: React.FC = () => {
           if (JSON.stringify(selection.item) !== JSON.stringify(item)) {
              setSelection({ categoryName: selection.categoryName, item });
           }
+        } else {
+            // Item no longer exists (was deleted), clear selection if not already done
+            setSelection(null);
         }
+      } else {
+          // Category no longer exists
+          setSelection(null);
       }
     }
   }, [data, selection]);
 
   // --- HANDLERS ---
+
+  const handleOnboardingFinish = (newData: Category[]) => {
+      setData(newData);
+  };
 
   // Unified Block Click Handler
   const handleBlockClick = (categoryName: string, item: LifeItem) => {
@@ -156,23 +171,38 @@ const App: React.FC = () => {
     const { categoryName, item } = selection;
     if (!window.confirm(`Supprimer ${item.name} ?`)) return;
 
-    setData(prev => {
-      return prev.map(cat => {
-        if (cat.category === categoryName) {
-          return {
-            ...cat,
-            items: cat.items.filter(i => i.id !== item.id)
-          };
-        }
-        return cat;
+    // 1. Close the sidebar immediately
+    setSelection(null);
+
+    // 2. Remove from Data (Immutable update)
+    setData(prevData => {
+      const newData = prevData.map(cat => {
+        if (cat.category !== categoryName) return cat;
+        
+        // Filter out the item
+        const newItems = cat.items.filter(i => {
+           // Priority: Check ID (for new/migrated items)
+           if (i.id && item.id) return i.id !== item.id;
+           // Fallback: Check Name (for legacy items)
+           return i.name !== item.name;
+        });
+        
+        return { ...cat, items: newItems };
       });
+      
+      // Remove categories that have become empty
+      return newData.filter(cat => cat.items.length > 0);
     });
 
-    setDependencies(prev => prev.filter(dep => 
-      !((dep.fromId === item.id) || (dep.toId === item.id))
-    ));
-
-    setSelection(null);
+    // 3. Remove associated dependencies
+    setDependencies(prev => prev.filter(dep => {
+        // Check if dependency is linked to the deleted item (From or To)
+        // We check both ID and Name to cover all legacy/new mixed cases
+        const isFromMatch = (item.id && dep.fromId === item.id) || (dep.fromItem === item.name);
+        const isToMatch = (item.id && dep.toId === item.id) || (dep.toItem === item.name);
+        
+        return !(isFromMatch || isToMatch);
+    }));
   };
 
   const handleDeleteDependency = (id: string) => {
@@ -181,9 +211,15 @@ const App: React.FC = () => {
   };
 
   const isDarkMode = settings.theme === 'dark';
+  // Show onboarding if there is absolutely no data
+  const showOnboarding = data.length === 0;
 
   return (
     <div className={`relative w-full h-screen overflow-hidden transition-colors duration-500 ${isDarkMode ? 'bg-slate-950' : 'bg-[#f0f9ff]'}`}>
+      
+      {/* Onboarding Wizard (Only shown if data is empty) */}
+      {showOnboarding && <OnboardingWizard onFinish={handleOnboardingFinish} />}
+
       {/* 3D Layer */}
       <div className="absolute inset-0 z-0">
         <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-gray-400 font-mono">LOADING...</div>}>
@@ -192,12 +228,10 @@ const App: React.FC = () => {
             dependencies={dependencies}
             selection={selection} 
             setSelection={(sel) => {
-                if (!sel) {
-                    // Only clear if not in connection mode to prevent accidental clears
-                    if(connectionMode === 'idle') setSelection(null);
-                } else {
-                    setSelection(sel);
-                }
+                // Prevent deselecting if clicking UI elements (handled via propagation usually, but safe guard here)
+                // If sel is null, it means we clicked empty space.
+                if (!sel && connectionMode !== 'idle') return;
+                setSelection(sel);
             }}
             onBlockClick={handleBlockClick}
             showConnections={showConnections}
@@ -209,36 +243,37 @@ const App: React.FC = () => {
         </Suspense>
       </div>
 
-      {/* 2D UI Layer */}
-      <div className="absolute inset-0 z-10 pointer-events-none">
-         <UIOverlay 
-            selection={selection} 
-            categories={data}
-            onClose={() => setSelection(null)}
-            onSelect={handleSelectFromUI}
-            onSaveNewElement={handleSaveNewElement}
-            onUpdateItem={handleUpdateItem}
-            onDelete={handleDeleteElement}
-            showConnections={showConnections}
-            onToggleConnections={() => setShowConnections(!showConnections)}
-            settings={settings}
-            onUpdateSettings={setSettings}
-            // Connection Mode Props
-            connectionMode={connectionMode}
-            onStartConnection={() => {
-                setConnectionMode('selecting-source');
-                setSelection(null);
-                setShowConnections(true);
-            }}
-            onCancelConnection={() => {
-                setConnectionMode('idle');
-                setConnectionSource(null);
-            }}
-         />
-      </div>
-      
-      {/* Decorative Vignette */}
-      <div className={`absolute inset-0 pointer-events-none ${isDarkMode ? 'bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]' : 'bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.05)_100%)]'}`} />
+      {/* 2D UI Layer (Hidden during onboarding) */}
+      {!showOnboarding && (
+          <div className="absolute inset-0 z-10 pointer-events-none">
+             <UIOverlay 
+                selection={selection} 
+                categories={data}
+                onClose={() => setSelection(null)}
+                onSelect={handleSelectFromUI}
+                onSaveNewElement={handleSaveNewElement}
+                onUpdateItem={handleUpdateItem}
+                onDelete={handleDeleteElement}
+                showConnections={showConnections}
+                onToggleConnections={() => setShowConnections(!showConnections)}
+                settings={settings}
+                onUpdateSettings={setSettings}
+                connectionMode={connectionMode}
+                onStartConnection={() => {
+                    if (selection) {
+                        setConnectionSource(selection);
+                        setConnectionMode('selecting-target');
+                    } else {
+                        setConnectionMode('selecting-source');
+                    }
+                }}
+                onCancelConnection={() => {
+                    setConnectionMode('idle');
+                    setConnectionSource(null);
+                }}
+             />
+          </div>
+      )}
     </div>
   );
 };

@@ -96,7 +96,8 @@ const Island: React.FC<IslandProps> = ({ category, position, selection, onSelect
       {/* Items */}
       {category.items.map((item, index) => (
         <Block
-          key={`${item.name}-${index}`}
+          // Use ID if available for stable reconciliation during deletes, fallback to name/index
+          key={item.id || `${item.name}-${index}`}
           item={item}
           color={category.color}
           position={itemPositions[index]}

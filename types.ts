@@ -1,13 +1,82 @@
-
 import * as THREE from 'three';
-import { ReactThreeFiber } from '@react-three/fiber';
 
+// Explicitly extend JSX.IntrinsicElements to include React Three Fiber elements
+// This resolves "Property does not exist on type 'JSX.IntrinsicElements'" errors
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      // Catch-all for Three.js elements in JSX (mesh, group, etc.)
-      // This resolves "Property does not exist" errors without needing exhaustive manual definitions
+      // Core
+      group: any;
+      mesh: any;
+      
+      // Geometries
+      sphereGeometry: any;
+      cylinderGeometry: any;
+      capsuleGeometry: any;
+      boxGeometry: any;
+      coneGeometry: any;
+      planeGeometry: any;
+      circleGeometry: any;
+      torusGeometry: any;
+      dodecahedronGeometry: any;
+      shapeGeometry: any;
+      edgesGeometry: any;
+      
+      // Materials
+      meshStandardMaterial: any;
+      lineBasicMaterial: any;
+      
+      // Lines
+      lineSegments: any;
+
+      // Lights & Scene
+      ambientLight: any;
+      directionalLight: any;
+      fog: any;
+      color: any; // Used for attach="background"
+
+      // Catch-all
       [elemName: string]: any;
+    }
+  }
+
+  // Augment React.JSX namespace for React 18+ support
+  namespace React {
+    namespace JSX {
+      interface IntrinsicElements {
+        // Core
+        group: any;
+        mesh: any;
+        
+        // Geometries
+        sphereGeometry: any;
+        cylinderGeometry: any;
+        capsuleGeometry: any;
+        boxGeometry: any;
+        coneGeometry: any;
+        planeGeometry: any;
+        circleGeometry: any;
+        torusGeometry: any;
+        dodecahedronGeometry: any;
+        shapeGeometry: any;
+        edgesGeometry: any;
+        
+        // Materials
+        meshStandardMaterial: any;
+        lineBasicMaterial: any;
+        
+        // Lines
+        lineSegments: any;
+
+        // Lights & Scene
+        ambientLight: any;
+        directionalLight: any;
+        fog: any;
+        color: any;
+
+        // Catch-all
+        [elemName: string]: any;
+      }
     }
   }
 }
