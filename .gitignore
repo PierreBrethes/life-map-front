@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 
+3dmodels
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

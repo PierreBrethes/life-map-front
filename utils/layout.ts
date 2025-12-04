@@ -1,15 +1,15 @@
 
 import { Category } from '../types';
 
-export const ITEM_SPACING = 1.5;
-export const ISLAND_GAP = 7.0; // Espace un peu plus grand pour laisser passer les câbles
+export const ITEM_SPACING = 2.5;
+export const ISLAND_GAP = 9.0; // Espace un peu plus grand pour laisser passer les câbles
 export const ISLAND_ROW_SIZE = 2;
 
 // Calcule la position (X, Z) du centre d'une île selon son index dans la liste des catégories
 export const getIslandPosition = (index: number, totalCategories: number): [number, number, number] => {
   const xIndex = index % ISLAND_ROW_SIZE;
   const zIndex = Math.floor(index / ISLAND_ROW_SIZE);
-  
+
   const offsetX = (ISLAND_ROW_SIZE - 1) * ISLAND_GAP * 0.5;
   const offsetZ = (Math.ceil(totalCategories / ISLAND_ROW_SIZE) - 1) * ISLAND_GAP * 0.5;
 
@@ -36,19 +36,19 @@ export const getItemLocalPosition = (itemIndex: number, totalItems: number): [nu
 
 // Calcule la position absolue dans le monde 3D d'un item spécifique
 export const getItemWorldPosition = (
-  categoryName: string, 
-  itemName: string, 
+  categoryName: string,
+  itemName: string,
   data: Category[],
   itemId?: string
 ): [number, number, number] | null => {
-  
+
   const catIndex = data.findIndex(c => c.category === categoryName);
   if (catIndex === -1) return null;
 
   const category = data[catIndex];
-  
+
   let itemIndex = -1;
-  
+
   if (itemId) {
     itemIndex = category.items.findIndex(i => i.id === itemId);
   }
@@ -57,7 +57,7 @@ export const getItemWorldPosition = (
   if (itemIndex === -1) {
     itemIndex = category.items.findIndex(i => i.name === itemName);
   }
-  
+
   if (itemIndex === -1) return null;
 
   const islandPos = getIslandPosition(catIndex, data.length);

@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { ContactShadows, Environment } from '@react-three/drei';
+import { ContactShadows } from '@react-three/drei';
 import Island from './Island';
 import CameraRig from './CameraRig';
 import Connections from './Connections';
@@ -25,8 +25,8 @@ interface ExperienceProps {
 const Ocean = ({ isDarkMode }: { isDarkMode: boolean }) => (
   <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.2, 0]}>
     <planeGeometry args={[100, 100, 20, 20]} />
-    <meshStandardMaterial 
-      color={isDarkMode ? "#0f172a" : "#bae6fd"} 
+    <meshStandardMaterial
+      color={isDarkMode ? "#0f172a" : "#bae6fd"}
       opacity={isDarkMode ? 0.8 : 0.6}
       transparent
       roughness={0.1}
@@ -35,19 +35,19 @@ const Ocean = ({ isDarkMode }: { isDarkMode: boolean }) => (
   </mesh>
 );
 
-const Experience: React.FC<ExperienceProps> = ({ 
-  data, 
-  dependencies, 
-  selection, 
-  setSelection, 
+const Experience: React.FC<ExperienceProps> = ({
+  data,
+  dependencies,
+  selection,
+  setSelection,
   onBlockClick,
-  showConnections, 
+  showConnections,
   isDarkMode,
   selectedDependencyId,
   onSelectDependency,
   onDeleteDependency
 }) => {
-  
+
   const handleMiss = () => {
     setSelection(null);
     onSelectDependency(null);
@@ -60,12 +60,12 @@ const Experience: React.FC<ExperienceProps> = ({
   }, [selection, data]);
 
   return (
-    <Canvas 
-      shadows 
-      dpr={[1, 2]} 
-      className="w-full h-full" 
+    <Canvas
+      shadows
+      dpr={[1, 2]}
+      className="w-full h-full"
       onPointerMissed={handleMiss}
-      gl={{ preserveDrawingBuffer: true }} 
+      gl={{ preserveDrawingBuffer: true }}
     >
       {/* Cinematic Camera Controller */}
       <CameraRig targetPosition={cameraTarget} />
@@ -74,32 +74,33 @@ const Experience: React.FC<ExperienceProps> = ({
       <color attach="background" args={[isDarkMode ? '#020617' : '#f0f9ff']} />
       <fog attach="fog" args={[isDarkMode ? '#020617' : '#f0f9ff', 20, 90]} />
 
-      <ambientLight intensity={isDarkMode ? 0.3 : 0.6} />
-      
+      <ambientLight intensity={isDarkMode ? 0.4 : 0.6} />
+
       <directionalLight
         position={[10, 20, 10]}
-        intensity={isDarkMode ? 1.0 : 2.0}
+        intensity={isDarkMode ? 1.2 : 2.0}
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0005}
       />
-      
-      <directionalLight position={[-5, 5, -5]} intensity={0.5} color={isDarkMode ? "#4f46e5" : "#e0e7ff"} />
 
-      <Environment preset={isDarkMode ? "night" : "city"} />
+      <directionalLight position={[-5, 5, -5]} intensity={isDarkMode ? 0.8 : 0.5} color={isDarkMode ? "#4f46e5" : "#e0e7ff"} />
+
+      {/* Additional soft fill light for dark mode */}
+      {isDarkMode && <directionalLight position={[0, 10, -10]} intensity={0.3} color="#1e293b" />}
 
       {/* Ocean Floor */}
       <Ocean isDarkMode={isDarkMode} />
 
       {/* --- CONTACT SHADOWS --- */}
-      <ContactShadows 
-        position={[0, -0.05, 0]} 
-        opacity={isDarkMode ? 0.3 : 0.5}     
-        scale={60}        
-        blur={2}        
-        far={10} 
-        resolution={512} 
-        color="#000000" 
+      <ContactShadows
+        position={[0, -0.05, 0]}
+        opacity={isDarkMode ? 0.3 : 0.5}
+        scale={60}
+        blur={2}
+        far={10}
+        resolution={512}
+        color="#000000"
       />
 
       {/* Islands Generation */}
@@ -120,12 +121,12 @@ const Experience: React.FC<ExperienceProps> = ({
 
       {/* Links / Connections Layer */}
       {showConnections && (
-        <Connections 
-            data={data} 
-            dependencies={dependencies} 
-            selectedId={selectedDependencyId}
-            onSelect={onSelectDependency}
-            onDelete={onDeleteDependency}
+        <Connections
+          data={data}
+          dependencies={dependencies}
+          selectedId={selectedDependencyId}
+          onSelect={onSelectDependency}
+          onDelete={onDeleteDependency}
         />
       )}
 

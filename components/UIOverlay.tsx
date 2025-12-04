@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { SelectionState, Category, ItemType, ItemStatus, LifeItem, UserSettings } from '../types';
 import * as Icons from 'lucide-react'; // Dynamic Import all icons
 import CreationModal, { ModalMode } from './CreationModal';
+import NotificationWidget from './NotificationWidget';
+import { ItemDetailSidebar } from './sidebar';
 
 interface UIOverlayProps {
     selection: SelectionState | null;
@@ -310,6 +312,15 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                     </button>
                 </div>
 
+                {/* Top-Right Notification Widget */}
+                <div className="absolute top-6 right-6 z-40 pointer-events-auto">
+                    <NotificationWidget
+                        categories={categories}
+                        isDarkMode={isDark}
+                        onItemClick={onSelect}
+                    />
+                </div>
+
                 {/* Bottom Action Bar (Split into two groups) */}
                 <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-auto pointer-events-auto z-40 flex items-center gap-4">
 
@@ -380,161 +391,15 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
             `}
                 >
                     {activeData && (
-                        <>
-                            <div className={`p-8 border-b flex justify-between items-start ${isDark ? 'bg-black/20 border-slate-700' : 'bg-white/50 border-gray-100'}`}>
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        {getCategoryIcon(activeData.categoryName)}
-                                        <span className={`text-xs font-bold uppercase tracking-widest ${textSecondary}`}>
-                                            {activeData.categoryName}
-                                        </span>
-                                    </div>
-                                    <h2 className={`text-3xl font-bold leading-tight break-words ${textPrimary}`}>
-                                        {activeData.item.name}
-                                    </h2>
-                                    <div className="flex items-center gap-2 mt-3">
-                                        {getStatusBadge(activeData.item.status)}
-                                        <span className={`flex items-center gap-1 text-[10px] font-mono uppercase px-2 py-0.5 rounded-full ${isDark ? 'bg-slate-800 text-slate-400' : 'bg-gray-100 text-gray-500'}`}>
-                                            {getTypeIcon(activeData.item.type)} {activeData.item.type}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); onDelete(); }}
-                                        className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-red-900/30 text-slate-400 hover:text-red-400' : 'hover:bg-red-50 text-gray-400 hover:text-red-600'}`}
-                                        title="Supprimer"
-                                    >
-                                        <Icons.Trash2 size={20} />
-                                    </button>
-                                    <button
-                                        onClick={onClose}
-                                        className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-slate-700 text-slate-400 hover:text-white' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-800'}`}
-                                        title="Fermer"
-                                    >
-                                        <Icons.X size={20} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="p-8 flex-1 overflow-y-auto space-y-8">
-
-                                <div className={`p-6 rounded-2xl border shadow-sm relative overflow-hidden transition-colors ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-gray-100'}`}>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <p className={`text-sm font-medium ${textSecondary}`}>Valeur Actuelle</p>
-                                        {!isEditingValue ? (
-                                            <button
-                                                onClick={() => setIsEditingValue(true)}
-                                                className={`p-1.5 rounded-lg transition-colors ${isDark ? 'hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400' : 'hover:bg-indigo-50 text-gray-400 hover:text-indigo-600'}`}
-                                                title="Modifier la valeur"
-                                            >
-                                                <Icons.Edit2 size={14} />
-                                            </button>
-                                        ) : (
-                                            <div className="flex gap-1">
-                                                <button
-                                                    onClick={handleValueUpdate}
-                                                    className="p-1.5 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600"
-                                                    title="Valider"
-                                                >
-                                                    <Icons.Check size={14} />
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        setIsEditingValue(false);
-                                                        setEditValue(activeData.item.value);
-                                                    }}
-                                                    className={`p-1.5 rounded-lg ${isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'}`}
-                                                    title="Annuler"
-                                                >
-                                                    <Icons.X size={14} />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {isEditingValue ? (
-                                        <form onSubmit={handleValueUpdate}>
-                                            <input
-                                                type="text"
-                                                value={editValue}
-                                                onChange={(e) => setEditValue(e.target.value)}
-                                                className={`w-full text-4xl font-bold bg-transparent outline-none border-b-2 py-1 ${isDark ? 'border-indigo-500/50 text-white' : 'border-indigo-500/30 text-gray-900'} focus:border-indigo-500 transition-colors`}
-                                                autoFocus
-                                            />
-                                            <p className="text-xs text-indigo-500 mt-2 font-medium">Appuyez sur Entrée pour valider</p>
-                                        </form>
-                                    ) : (
-                                        <p className={`text-5xl font-bold tracking-tight break-all ${textPrimary}`}>
-                                            {formatValue(activeData.item.value, activeData.item.type)}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* NOTIFICATION MANAGEMENT */}
-                                {activeData.item.status !== 'ok' && (
-                                    <div className={`p-5 rounded-2xl border shadow-sm space-y-4 ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-white border-gray-100'}`}>
-                                        <div className="flex items-center justify-between">
-                                            <h3 className={`text-xs font-bold uppercase tracking-widest ${textSecondary} flex items-center gap-2`}>
-                                                <Icons.BellRing size={12} /> Notification
-                                            </h3>
-                                            <button
-                                                onClick={() => onUpdateItem(activeData.categoryName, activeData.item.id, { notificationDismissed: !activeData.item.notificationDismissed })}
-                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${!activeData.item.notificationDismissed ? 'bg-red-500' : 'bg-gray-300'}`}
-                                            >
-                                                <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${!activeData.item.notificationDismissed ? 'translate-x-5' : 'translate-x-1'}`} />
-                                            </button>
-                                        </div>
-
-                                        {/* Custom Label Input */}
-                                        <form onSubmit={handleLabelUpdate} className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                placeholder="Message de l'alerte..."
-                                                value={customLabel}
-                                                onChange={(e) => setCustomLabel(e.target.value)}
-                                                className={`flex-1 text-xs px-3 py-2 rounded-lg border bg-transparent focus:ring-1 focus:ring-indigo-500 outline-none ${inputClass}`}
-                                            />
-                                            <button type="submit" className={`p-2 rounded-lg ${isDark ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                                                <Icons.Save size={14} />
-                                            </button>
-                                        </form>
-
-                                        <div className="flex justify-between items-center text-xs">
-                                            <span className={textSecondary}>{activeData.item.notificationDismissed ? 'Notification masquée' : 'Notification active'}</span>
-                                            <button
-                                                onClick={() => onUpdateItem(activeData.categoryName, activeData.item.id, { status: 'ok', notificationDismissed: false })}
-                                                className="text-red-500 hover:text-red-600 font-semibold"
-                                            >
-                                                Effacer l'alerte
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="space-y-3">
-                                    <h3 className={`text-xs font-bold uppercase tracking-widest mb-2 ${textSecondary}`}>Actions</h3>
-
-                                    <button className={`w-full group flex items-center justify-between p-4 rounded-xl border shadow-sm transition-all ${isDark ? 'bg-slate-800/50 border-slate-700 hover:bg-slate-700' : 'bg-white border-gray-100 hover:bg-gray-50'}`}>
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDark ? 'bg-indigo-500/20' : 'bg-indigo-50'}`}>
-                                                <Icons.Activity size={14} className={isDark ? 'text-indigo-400' : 'text-indigo-600'} />
-                                            </div>
-                                            <div className="text-left">
-                                                <p className={`text-sm font-semibold ${textPrimary}`}>Historique</p>
-                                                <p className={`text-xs ${textSecondary}`}>Voir l'évolution</p>
-                                            </div>
-                                        </div>
-                                        <Icons.ArrowRight size={16} className={`transition-colors transform group-hover:translate-x-1 ${isDark ? 'text-slate-600 group-hover:text-indigo-400' : 'text-gray-300 group-hover:text-indigo-600'}`} />
-                                    </button>
-                                </div>
-
-                            </div>
-
-                            <div className={`p-6 border-t text-center ${isDark ? 'border-slate-700 bg-slate-900/50' : 'border-gray-100 bg-gray-50/50'}`}>
-                                <span className={`text-[10px] font-mono uppercase ${textSecondary}`}>ID: {activeData.item.id || 'LEGACY'}</span>
-                            </div>
-                        </>
+                        <ItemDetailSidebar
+                            categoryName={activeData.categoryName}
+                            categoryColor={categories.find(c => c.category === activeData.categoryName)?.color || '#6366f1'}
+                            item={activeData.item}
+                            isDark={isDark}
+                            onClose={onClose}
+                            onDelete={onDelete}
+                            onUpdateItem={(updates) => onUpdateItem(activeData.categoryName, activeData.item.id, updates)}
+                        />
                     )}
                 </div>
             </div>

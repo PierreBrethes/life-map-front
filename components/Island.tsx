@@ -15,7 +15,7 @@ interface IslandProps {
 
 const Island: React.FC<IslandProps> = ({ category, position, selection, onSelect }) => {
   const MIN_SIZE = 4.5; // Minimum width/height for the island to look good with label
-  const PADDING = 2.0; // Space around the grid of items
+  const PADDING = 2.8; // Space around the grid of items
 
   // 1. Calculate Grid Dimensions for the Shape
   const itemCount = category.items.length;
@@ -42,10 +42,10 @@ const Island: React.FC<IslandProps> = ({ category, position, selection, onSelect
   const shape = useMemo(() => {
     const s = new THREE.Shape();
     const r = 0.3; // Corner radius
-    
+
     const w = islandWidth;
     const h = islandDepth;
-    
+
     const x = -w / 2;
     const y = -h / 2;
 
@@ -74,22 +74,22 @@ const Island: React.FC<IslandProps> = ({ category, position, selection, onSelect
           side={THREE.DoubleSide}
         />
       </mesh>
-      
+
       {/* Category Label - Anchored to bottom-left corner dynamically */}
-      <group 
-        position={[(-islandWidth / 2) + 0.3, 0.02, (islandDepth / 2) - 0.3]} 
-        rotation={[-Math.PI/2, 0, 0]}
+      <group
+        position={[(-islandWidth / 2) + 0.3, 0.02, (islandDepth / 2) - 0.3]}
+        rotation={[-Math.PI / 2, 0, 0]}
       >
         <Text
-            position={[0, 0, 0]}
-            fontSize={0.18}
-            color={category.color}
-            anchorX="left"
-            anchorY="bottom" // Align to bottom-left inside the group
-            fontWeight={800}
-            letterSpacing={0.05}
+          position={[0, 0, 0]}
+          fontSize={0.18}
+          color={category.color}
+          anchorX="left"
+          anchorY="bottom" // Align to bottom-left inside the group
+          fontWeight={800}
+          letterSpacing={0.05}
         >
-            {category.category.toUpperCase()}
+          {category.category.toUpperCase()}
         </Text>
       </group>
 

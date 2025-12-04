@@ -2,10 +2,16 @@ import React, { useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Center, Text, Html, useCursor } from '@react-three/drei';
 import * as THREE from 'three';
-import { AssetOption } from '../utils/assetMapping';
+import { AssetOption, GLB_ASSET_CONFIG } from '../utils/assetMapping';
 import { AssetRenderer } from './AssetRenderer';
 import { AssetType } from '../types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+// Helper to get preview scale from centralized config
+const getPreviewScale = (assetType: AssetType): number => {
+  return GLB_ASSET_CONFIG[assetType]?.previewScale || 1.0;
+};
+
 
 interface AssetCarouselProps {
   assets: AssetOption[];
@@ -43,7 +49,8 @@ const CarouselItem = ({
       group.current.position.x = THREE.MathUtils.lerp(group.current.position.x, targetX, delta * 5);
 
       // Scale effect: Selected is bigger
-      const targetScale = isSelected ? 1.2 : 0.8;
+      const baseScale = getPreviewScale(asset.value);
+      const targetScale = isSelected ? 1.2 * baseScale : 0.8 * baseScale;
       const currentScale = group.current.scale.x;
       const newScale = THREE.MathUtils.lerp(currentScale, targetScale, delta * 5);
       group.current.scale.set(newScale, newScale, newScale);

@@ -8,7 +8,7 @@ declare global {
       // Core
       group: any;
       mesh: any;
-      
+
       // Geometries
       sphereGeometry: any;
       cylinderGeometry: any;
@@ -21,11 +21,11 @@ declare global {
       dodecahedronGeometry: any;
       shapeGeometry: any;
       edgesGeometry: any;
-      
+
       // Materials
       meshStandardMaterial: any;
       lineBasicMaterial: any;
-      
+
       // Lines
       lineSegments: any;
 
@@ -47,7 +47,7 @@ declare global {
         // Core
         group: any;
         mesh: any;
-        
+
         // Geometries
         sphereGeometry: any;
         cylinderGeometry: any;
@@ -60,11 +60,11 @@ declare global {
         dodecahedronGeometry: any;
         shapeGeometry: any;
         edgesGeometry: any;
-        
+
         // Materials
         meshStandardMaterial: any;
         lineBasicMaterial: any;
-        
+
         // Lines
         lineSegments: any;
 
@@ -83,7 +83,24 @@ declare global {
 
 export type ItemType = 'currency' | 'text' | 'percentage' | 'date';
 export type ItemStatus = 'ok' | 'warning' | 'critical';
-export type AssetType = 'default' | 'finance' | 'health' | 'home' | 'nature' | 'sport' | 'tech' | 'travel' | 'people';
+export type AssetType =
+  | 'default'
+  // Finances
+  | 'current_account' | 'savings' | 'investments' | 'debt'
+  // Immobilier
+  | 'house' | 'apartment' | 'land' | 'parking'
+  // Garage
+  | 'car' | 'motorbike' | 'boat' | 'plane'
+  // Carrière
+  | 'job' | 'freelance' | 'education' | 'skill'
+  // Santé
+  | 'medical' | 'sport' | 'insurance' | 'ambulance' | 'hospital' | 'doctor'
+  // Loisirs
+  | 'travel' | 'hobby_creative' | 'hobby_tech'
+  // Social
+  | 'family' | 'friends' | 'pet'
+  // Legacy / Fallbacks (gardés pour compatibilité si nécessaire, ou mappés)
+  | 'finance' | 'health' | 'home' | 'nature' | 'tech' | 'people';
 
 export interface LifeItem {
   id: string;

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { X, Check, ChevronDown, Sparkles, Loader2 } from 'lucide-react';
 import { Category, ItemType, ItemStatus, AssetType } from '../types';
 import { suggestAttributes } from '../utils/ai';
-import { getAssetsForCategory } from '../utils/assetMapping';
+import { getAssetsForCategory, ASSET_MAPPING } from '../utils/assetMapping';
 import AssetCarousel from './AssetCarousel';
 
 export type ModalMode = 'category' | 'item' | null;
@@ -150,27 +150,21 @@ const CreationModal: React.FC<CreationModalProps> = ({ mode, categories, initial
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className={`block text-xs font-bold uppercase tracking-wider mb-2 ${textSecondary}`}>
-                Nom de l'île
+                Type d'île
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Sport, Finances..."
-                  className={`flex-1 px-4 py-3 rounded-xl border focus:ring-2 outline-none transition-all font-medium ${inputClass}`}
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={handleMagicSuggest}
-                  disabled={!name || isSuggesting}
-                  className={`px-4 rounded-xl transition-colors flex items-center justify-center disabled:opacity-50 ${magicButtonClass}`}
-                  title="Suggestions IA"
-                >
-                  {isSuggesting ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} />}
-                </button>
-              </div>
+              <select
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={`w-full px-4 py-3 rounded-xl border focus:ring-2 outline-none transition-all font-medium ${inputClass}`}
+                autoFocus
+              >
+                <option value="">Sélectionner un type...</option>
+                {Object.keys(ASSET_MAPPING).map((islandType) => (
+                  <option key={islandType} value={islandType}>
+                    {islandType}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
