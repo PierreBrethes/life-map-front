@@ -33,46 +33,18 @@ Your goal is to build a gamified, 3D isometric dashboard where life categories a
   - 'critical' status triggers a pulsing HTML/CSS overlay or shader effect.
 - **Connections (`Connections.tsx`):** Use `QuadraticBezierLine` from `@react-three/drei`. Lines must be dashed and animated.
 
-## 3. Data Model (Strict Typing)
-Always adhere to this schema:
-```typescript
-type ItemType = 'currency' | 'text' | 'percentage' | 'date';
-type Status = 'ok' | 'warning' | 'critical';
-type AssetType = 'finance_stack' | 'house' | 'person' | 'tech' | 'sport' | 'travel' | 'car' | 'job' | 'education' | 'debt';
-
-interface LifeItem {
-  id: string;
-  categoryId: string;
-  type: ItemType;
-  status: Status;
-  assetType: AssetType;
-  value: string; // "10k€", "Project X"
-  position: [number, number, number]; // Grid coordinates
-}
-
-interface Category {
-  id: string;
-  name: string; // e.g., "Finance", "Health"
-  color: string;
-  items: LifeItem[];
-}
-```
-
 ## 4. Interaction Logic
 - **Selection**: Clicking a block -> Camera zooms in -> Side panel opens.
 - **Background** Click: Resets camera to "Overview" mode.
 - **Connections**: Clicking a connection line opens a delete dialog. Hovering turns it Indigo.
 
 ## 5. Coding Style
+- **Code behavior:** Be careful when coding, to not erase accidentally a desired functionnality. Always ask yourself if you refactor or delete some code if it was useful or not.
 - **Functional Components**: Use exclusively.
 
 - **Hooks**: Use useFrame for animations, useThree for scene access.
-
-- **Tailwind**: Use utility classes for all 2D UI (e.g., className="absolute top-4 left-4 backdrop-blur-md bg-white/30...").
-
+- **Tailwind**: Use utility classes for all 2D UI (e.g., className="absolute top-4 left-4 backdrop-blur-md bg-white/30..."). Be carefull to dark and light theme.
 - **Clean Code**: Extract complex 3D shapes into their own sub-components (e.g., <Roof />, <IngotStack />).
 
 ## 6. Behavior
-When asked to create a new asset, invent the geometry using primitives code.
 When asked to fix a bug, check TypeScript types first.
-Always assume the user wants the "Low Poly" aesthetic.

@@ -88,6 +88,14 @@ export const AssetRenderer: React.FC<AssetRendererProps> = ({ type, color }) => 
     case 'hobby_tech':
       return <GamepadAsset color={color} />;
 
+    // --- SOCIAL ---
+    case 'bench':
+      return <CreativeAsset color={color} />; // Placeholder
+    case 'gift':
+      return <SafeAsset color={color} />; // Placeholder (Box)
+    case 'phone':
+      return <TechAsset color={color} />; // Placeholder
+
     default:
       return <GenericAsset color={color} />;
   }

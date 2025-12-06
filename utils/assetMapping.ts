@@ -190,6 +190,9 @@ export const ALL_ASSETS: AssetOption[] = [
   { label: 'Famille (Maison)', value: 'family' },
   { label: 'Amis (Groupe)', value: 'friends' },
   { label: 'Animal (Patte)', value: 'pet' },
+  { label: 'Banc / Café', value: 'bench' },
+  { label: 'Cadeau / Gâteau', value: 'gift' },
+  { label: 'Téléphone / Lettre', value: 'phone' },
 
   // Legacy (pour compatibilité)
   { label: 'Finance (Pile)', value: 'finance' },
@@ -205,7 +208,7 @@ export const ASSET_MAPPING: Record<string, AssetType[]> = {
   'Santé': ['medical', 'sport', 'insurance', 'ambulance', 'hospital', 'doctor', 'health', 'default'],
   'Loisirs': ['travel', 'hobby_creative', 'hobby_tech', 'sport', 'nature', 'default'],
   'Famille': ['family', 'friends', 'pet', 'people', 'default'],
-  'Social': ['family', 'friends', 'pet', 'people', 'default'],
+  'Social': ['family', 'friends', 'pet', 'bench', 'gift', 'phone', 'people', 'default'],
   'Projets': ['travel', 'freelance', 'hobby_creative', 'default'],
 };
 
@@ -259,6 +262,9 @@ export const ASSET_METADATA: Record<AssetType, AssetMetadata> = {
   'family': { topOffset: 1.2 },
   'friends': { topOffset: 1.0 },
   'pet': { topOffset: 0.6 },
+  'bench': { topOffset: 0.6 },
+  'gift': { topOffset: 0.8 },
+  'phone': { topOffset: 0.7 },
   'people': { topOffset: 0.9 }, // Legacy
 };
 

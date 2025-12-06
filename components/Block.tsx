@@ -8,6 +8,7 @@ import { getAssetMetadata } from '../utils/assetMapping';
 import { AssetRenderer } from './AssetRenderer';
 import { FinanceStackAsset } from './assets/FinanceStackAsset';
 import { AlertSignal } from './assets/AlertSignal';
+import { isFinanceAssetType, formatCurrency, getInitialBalance } from '../hooks/useFinanceBalance';
 
 interface BlockProps {
     item: LifeItem;
@@ -25,14 +26,22 @@ const Block: React.FC<BlockProps> = ({ item, color, position, categoryName, isSe
     const [hovered, setHovered] = useState(false);
     const effectiveColor = useMemo(() => getStatusColor(color, item.status), [color, item.status]);
 
+    // Check if this is a finance-type item
+    const isFinanceType = isFinanceAssetType(item.assetType);
+
     // Get asset metadata for positioning
     let topOffset = getAssetMetadata(item.assetType).topOffset;
+
+    // Determine the display value for the block
+    // Uses item.value which is synced from the sidebar when syncBalanceWithBlock is enabled
+    const displayValue = item.value;
 
     // Special case for FinanceStackAsset which needs dynamic height calculation
     let assetElement: React.ReactNode;
     if (item.assetType === 'finance') {
         const numValue = parseValueToNumber(item.value);
         const financeHeight = Math.min(Math.max(numValue / 5000, 0.6), 5.0);
+        // FinanceStackAsset always shows the current item.value (which is synced when sync is enabled)
         assetElement = <FinanceStackAsset color={color} height={financeHeight} value={formatDisplayValue(item.value, item.type)} status={item.status} />;
         // Calculate topOffset based on stack height
         const segmentHeight = 0.2;
@@ -63,6 +72,11 @@ const Block: React.FC<BlockProps> = ({ item, color, position, categoryName, isSe
     // Only show AlertSignal if critical AND not dismissed
     const showNotification = item.status === 'critical' && !item.notificationDismissed;
 
+    // Show value label for finance types when sync is enabled
+    // For 'finance' type (coin stack), the value is already shown by FinanceStackAsset
+    // For other finance types (card, safe, etc.), we show an HTML label
+    const showValueLabel = isFinanceType && item.syncBalanceWithBlock && item.assetType !== 'finance';
+
     return (
         <group
             ref={groupRef}
@@ -73,16 +87,25 @@ const Block: React.FC<BlockProps> = ({ item, color, position, categoryName, isSe
         >
             {assetElement}
 
+            {/* VALUE LABEL for Finance Items with sync enabled (except coin stack which shows it natively) */}
+            {showValueLabel && (
+                <Html position={[0, topOffset + 0.3, 0]} center zIndexRange={[50, 0]} style={{ pointerEvents: 'none' }}>
+                    <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap shadow-lg border border-emerald-500/30">
+                        {displayValue}
+                    </div>
+                </Html>
+            )}
+
             {/* ALERT SIGNAL for Critical Items */}
             {showNotification && (
-                <group position={[0, topOffset + 0.5, 0]}>
+                <group position={[0, topOffset + (showValueLabel ? 1.0 : 0.5), 0]}>
                     <AlertSignal height={0} label={item.notificationLabel || 'Attention'} />
                 </group>
             )}
 
             {/* Hover Label */}
             {hovered && !isSelected && (
-                <Html position={[0, topOffset + 0.5, 0]} center zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
+                <Html position={[0, topOffset + (showValueLabel ? 1.0 : 0.5), 0]} center zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
                     <div className="bg-black/80 text-white px-2 py-1 rounded text-xs whitespace-nowrap backdrop-blur-sm shadow-lg">
                         {item.name}
                     </div>
