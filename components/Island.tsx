@@ -36,7 +36,7 @@ const Island: React.FC<IslandProps> = ({ category, position, selection, onSelect
     });
   }, [category.items.length, itemCount]);
 
-  const isCategorySelected = selection?.categoryName === category.category;
+  const isCategorySelected = selection?.categoryName === category.name;
 
   // 4. Create Dynamic Shape based on calculated dimensions
   const shape = useMemo(() => {
@@ -89,7 +89,7 @@ const Island: React.FC<IslandProps> = ({ category, position, selection, onSelect
           fontWeight={800}
           letterSpacing={0.05}
         >
-          {category.category.toUpperCase()}
+          {category.name.toUpperCase()}
         </Text>
       </group>
 
@@ -101,7 +101,7 @@ const Island: React.FC<IslandProps> = ({ category, position, selection, onSelect
           item={item}
           color={category.color}
           position={itemPositions[index]}
-          categoryName={category.category}
+          categoryName={category.name}
           isSelected={selection?.item.name === item.name && isCategorySelected}
           onSelect={onSelect}
         />

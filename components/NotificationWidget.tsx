@@ -38,7 +38,7 @@ const NotificationWidget: React.FC<NotificationWidgetProps> = ({
       if ((item.status === 'warning' || item.status === 'critical') && !item.notificationDismissed) {
         notifications.push({
           item,
-          categoryName: cat.category,
+          categoryName: cat.name,
           categoryColor: cat.color
         });
       }

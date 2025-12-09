@@ -42,7 +42,7 @@ export const getItemWorldPosition = (
   itemId?: string
 ): [number, number, number] | null => {
 
-  const catIndex = data.findIndex(c => c.category === categoryName);
+  const catIndex = data.findIndex(c => c.name === categoryName);
   if (catIndex === -1) return null;
 
   const category = data[catIndex];

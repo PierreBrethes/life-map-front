@@ -126,7 +126,8 @@ export interface LifeItem {
 }
 
 export interface Category {
-  category: string;
+  id: string; // Backend sends ID
+  name: string; // Backend sends name, not category
   color: string;
   icon?: string; // Nom de l'icone Lucide
   items: LifeItem[];

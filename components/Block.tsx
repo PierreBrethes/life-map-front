@@ -8,7 +8,7 @@ import { getAssetMetadata } from '../utils/assetMapping';
 import { AssetRenderer } from './AssetRenderer';
 import { FinanceStackAsset } from './assets/FinanceStackAsset';
 import { AlertSignal } from './assets/AlertSignal';
-import { isFinanceAssetType, formatCurrency, getInitialBalance } from '../hooks/useFinanceBalance';
+import { isFinanceAssetType, formatCurrency } from '../hooks/useFinanceBalance';
 
 interface BlockProps {
     item: LifeItem;

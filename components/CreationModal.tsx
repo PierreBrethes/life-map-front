@@ -5,6 +5,8 @@ import { suggestAttributes } from '../utils/ai';
 import { getAssetsForCategory, ASSET_MAPPING } from '../utils/assetMapping';
 import AssetCarousel from './AssetCarousel';
 
+import { useLifeMapMutations } from '../hooks/useLifeMapMutations';
+
 export type ModalMode = 'category' | 'item' | null;
 
 interface CreationModalProps {
@@ -12,17 +14,16 @@ interface CreationModalProps {
   categories: Category[];
   initialCategory?: string | null;
   onClose: () => void;
-  onSave: (data: any) => void;
   isDarkMode?: boolean;
 }
 
 const COLORS = ['#6366f1', '#10b981', '#ec4899', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#14b8a6'];
 
-const CreationModal: React.FC<CreationModalProps> = ({ mode, categories, initialCategory, onClose, onSave, isDarkMode = false }) => {
+const CreationModal: React.FC<CreationModalProps> = ({ mode, categories, initialCategory, onClose, isDarkMode = false }) => {
   const [name, setName] = useState('');
   const [value, setValue] = useState('');
   const [selectedColor, setSelectedColor] = useState(COLORS[0]);
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory || (categories.length > 0 ? categories[0].category : ''));
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || (categories.length > 0 ? categories[0].name : ''));
 
   const [type, setType] = useState<ItemType>('text');
   const [status, setStatus] = useState<ItemStatus>('ok');
@@ -30,6 +31,8 @@ const CreationModal: React.FC<CreationModalProps> = ({ mode, categories, initial
   const [iconName, setIconName] = useState<string>('Box');
 
   const [isSuggesting, setIsSuggesting] = useState(false);
+
+  const { createItem, createCategory } = useLifeMapMutations();
 
   // Theme-based styles (like UIOverlay)
   const modalBgClass = isDarkMode
@@ -63,7 +66,7 @@ const CreationModal: React.FC<CreationModalProps> = ({ mode, categories, initial
     setAssetType('default');
     setIconName('Box');
     if (initialCategory) setSelectedCategory(initialCategory);
-    else if (categories.length > 0) setSelectedCategory(categories[0].category);
+    else if (categories.length > 0) setSelectedCategory(categories[0].name);
   }, [mode, initialCategory, categories]);
 
   // Compute available assets based on selected category
@@ -74,7 +77,7 @@ const CreationModal: React.FC<CreationModalProps> = ({ mode, categories, initial
   // Determine current color for preview
   const currentColor = useMemo(() => {
     if (mode === 'category') return selectedColor;
-    const cat = categories.find(c => c.category === selectedCategory);
+    const cat = categories.find(c => c.name === selectedCategory);
     return cat ? cat.color : '#6366f1';
   }, [mode, selectedColor, selectedCategory, categories]);
 
@@ -111,23 +114,20 @@ const CreationModal: React.FC<CreationModalProps> = ({ mode, categories, initial
     e.preventDefault();
     if (!name) return;
 
-    const id = Math.random().toString(36).substr(2, 9);
-
     if (mode === 'category') {
-      onSave({ category: name, color: selectedColor, icon: iconName, items: [] });
+      createCategory.mutate({ name, color: selectedColor, icon: iconName });
     } else {
-      onSave({
-        categoryName: selectedCategory,
-        item: {
-          id,
+      const cat = categories.find(c => c.name === selectedCategory);
+      if (cat) {
+        createItem.mutate({
+          categoryId: cat.id,
           name,
           value: value || '0',
           type,
           status,
-          assetType,
-          lastUpdated: Date.now()
-        }
-      });
+          assetType
+        });
+      }
     }
     onClose();
   };
@@ -258,7 +258,7 @@ const CreationModal: React.FC<CreationModalProps> = ({ mode, categories, initial
                         className={`w-full px-4 py-3 rounded-xl border focus:ring-2 outline-none appearance-none font-medium ${inputClass}`}
                       >
                         {categories.map(cat => (
-                          <option key={cat.category} value={cat.category}>{cat.category}</option>
+                          <option key={cat.name} value={cat.name}>{cat.name}</option>
                         ))}
                       </select>
                       <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none ${textSecondary}`} size={16} />

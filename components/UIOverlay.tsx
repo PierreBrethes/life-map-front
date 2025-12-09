@@ -5,19 +5,18 @@ import * as Icons from 'lucide-react'; // Dynamic Import all icons
 import CreationModal, { ModalMode } from './CreationModal';
 import NotificationWidget from './NotificationWidget';
 import { ItemDetailSidebar } from './sidebar';
+import { useLifeMapMutations } from '../hooks/useLifeMapMutations';
 
 interface UIOverlayProps {
     selection: SelectionState | null;
     categories: Category[];
     onClose: () => void;
     onSelect: (categoryName: string, item: LifeItem) => void;
-    onSaveNewElement: (data: any, modalMode: ModalMode) => void;
     onUpdateItem: (categoryName: string, itemId: string, updates: Partial<LifeItem>) => void;
     onDelete: () => void;
     showConnections: boolean;
     onToggleConnections: () => void;
     settings: UserSettings;
-    onUpdateSettings: (settings: UserSettings) => void;
 
     // Connection Mode Props
     connectionMode: 'idle' | 'selecting-source' | 'selecting-target';
@@ -30,13 +29,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     categories,
     onClose,
     onSelect,
-    onSaveNewElement,
     onUpdateItem,
     onDelete,
     showConnections,
     onToggleConnections,
     settings,
-    onUpdateSettings,
     connectionMode,
     onStartConnection,
     onCancelConnection
@@ -55,6 +52,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     // Value Editing State
     const [isEditingValue, setIsEditingValue] = useState(false);
     const [editValue, setEditValue] = useState('');
+
+    const { updateSettings } = useLifeMapMutations();
 
     const isDark = settings.theme === 'dark';
 
@@ -95,7 +94,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
         categories.forEach(cat => {
             cat.items.forEach(item => {
                 if (item.name.toLowerCase().includes(query)) {
-                    results.push({ categoryName: cat.category, item });
+                    results.push({ categoryName: cat.name, item }); // Use cat.name instead of cat.category
                 }
             });
         });
@@ -111,7 +110,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     };
 
     const getCategoryIcon = (catName: string) => {
-        const category = categories.find(c => c.category === catName);
+        const category = categories.find(c => c.name === catName); // Use name
         const colorClass = isDark ? "text-indigo-400" : "text-indigo-600";
         if (category?.icon) return <span className={colorClass}>{renderIcon(category.icon, <Icons.Box className="w-5 h-5" />)}</span>;
         return <Icons.Box className={`w-5 h-5 ${isDark ? 'text-slate-400' : 'text-gray-600'}`} />;
@@ -141,11 +140,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
         return val;
     };
 
-    const handleSave = (data: any) => {
-        onSaveNewElement(data, modalMode);
-        setModalMode(null);
-    };
-
     const handleLabelUpdate = (e: React.FormEvent) => {
         e.preventDefault();
         if (activeData) {
@@ -168,7 +162,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                 categories={categories}
                 initialCategory={selection?.categoryName}
                 onClose={() => setModalMode(null)}
-                onSave={handleSave}
                 isDarkMode={isDark}
             />
 
@@ -221,7 +214,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => onUpdateSettings({ ...settings, theme: isDark ? 'light' : 'dark' })}
+                                    onClick={() => updateSettings.mutate({ ...settings, theme: isDark ? 'light' : 'dark' })}
                                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${isDark ? 'bg-indigo-600' : 'bg-gray-200'}`}
                                 >
                                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isDark ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -240,7 +233,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => onUpdateSettings({ ...settings, notificationsEnabled: !settings.notificationsEnabled })}
+                                    onClick={() => updateSettings.mutate({ ...settings, notificationsEnabled: !settings.notificationsEnabled })}
                                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${settings.notificationsEnabled ? 'bg-emerald-500' : 'bg-gray-200'}`}
                                 >
                                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.notificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
@@ -393,7 +386,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                     {activeData && (
                         <ItemDetailSidebar
                             categoryName={activeData.categoryName}
-                            categoryColor={categories.find(c => c.category === activeData.categoryName)?.color || '#6366f1'}
+                            categoryColor={categories.find(c => c.name === activeData.categoryName)?.color || '#6366f1'}
                             item={activeData.item}
                             isDark={isDark}
                             onClose={onClose}

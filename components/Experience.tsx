@@ -109,7 +109,7 @@ const Experience: React.FC<ExperienceProps> = ({
           const position = getIslandPosition(index, data.length);
           return (
             <Island
-              key={category.category}
+              key={category.id}
               category={category}
               position={position}
               selection={selection}
