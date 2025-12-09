@@ -140,12 +140,10 @@ export interface SelectionState {
 
 export interface Dependency {
   id: string;
-  fromCategory: string;
-  fromItem: string;
-  fromId?: string;
-  toCategory: string;
-  toItem: string;
-  toId?: string;
+  fromCategoryId: string;
+  fromItemId: string;
+  toCategoryId: string;
+  toItemId: string;
 }
 
 export interface UserSettings {

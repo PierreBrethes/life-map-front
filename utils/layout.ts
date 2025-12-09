@@ -36,28 +36,17 @@ export const getItemLocalPosition = (itemIndex: number, totalItems: number): [nu
 
 // Calcule la position absolue dans le monde 3D d'un item spécifique
 export const getItemWorldPosition = (
-  categoryName: string,
-  itemName: string,
-  data: Category[],
-  itemId?: string
+  categoryId: string,
+  itemId: string,
+  data: Category[]
 ): [number, number, number] | null => {
 
-  const catIndex = data.findIndex(c => c.name === categoryName);
+  const catIndex = data.findIndex(c => c.id === categoryId);
   if (catIndex === -1) return null;
 
   const category = data[catIndex];
 
-  let itemIndex = -1;
-
-  if (itemId) {
-    itemIndex = category.items.findIndex(i => i.id === itemId);
-  }
-
-  // Fallback to name search if ID not provided or not found
-  if (itemIndex === -1) {
-    itemIndex = category.items.findIndex(i => i.name === itemName);
-  }
-
+  const itemIndex = category.items.findIndex(i => i.id === itemId);
   if (itemIndex === -1) return null;
 
   const islandPos = getIslandPosition(catIndex, data.length);

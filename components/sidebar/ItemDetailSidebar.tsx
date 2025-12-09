@@ -140,7 +140,8 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = ({
         notificationDismissed: activeAlertSeverity === 'ok'
       });
     }
-  }, [activeAlertSeverity, item.status, onUpdateItem]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeAlertSeverity, item.status]);
 
 
   // --- HANDLERS ---
