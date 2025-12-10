@@ -6,6 +6,9 @@ import { useFinanceBalance, formatCurrency } from '../../hooks/useFinanceBalance
 // Real estate asset types
 const REAL_ESTATE_TYPES = ['house', 'apartment'];
 
+// Garage/Vehicle asset types
+const GARAGE_TYPES = ['car', 'motorbike', 'boat', 'plane'];
+
 interface SidebarHeaderProps {
   categoryName: string;
   categoryIcon?: string;
@@ -42,14 +45,16 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
   subscriptions,
   onToggleSyncBalance,
 }) => {
-  // Check if real estate
+  // Check asset type
   const isRealEstate = item.assetType && REAL_ESTATE_TYPES.includes(item.assetType);
+  const isGarage = item.assetType && GARAGE_TYPES.includes(item.assetType);
 
   // Editable states
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingValue, setIsEditingValue] = useState(false);
   const [isEditingRent, setIsEditingRent] = useState(false);
   const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [isEditingMileage, setIsEditingMileage] = useState(false);
 
   const [editName, setEditName] = useState(item.name);
   const [editValue, setEditValue] = useState(item.value);
@@ -58,6 +63,7 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
   const [editAddress, setEditAddress] = useState(item.address || '');
   const [editCity, setEditCity] = useState(item.city || '');
   const [editPostalCode, setEditPostalCode] = useState(item.postalCode || '');
+  const [editMileage, setEditMileage] = useState(item.mileage?.toString() || '');
 
   const nameInputRef = useRef<HTMLInputElement>(null);
   const valueInputRef = useRef<HTMLInputElement>(null);
@@ -74,6 +80,7 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
       // Reset edit states
       setIsEditingRent(false);
       setIsEditingAddress(false);
+      setIsEditingMileage(false);
       // Allow transition to complete before enabling sync
       const timer = setTimeout(() => setIsTransitioning(false), 100);
       return () => clearTimeout(timer);
@@ -116,6 +123,10 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
     setEditCity(item.city || '');
     setEditPostalCode(item.postalCode || '');
   }, [item.address, item.city, item.postalCode]);
+
+  useEffect(() => {
+    setEditMileage(item.mileage?.toString() || '');
+  }, [item.mileage]);
 
   // Focus input when editing starts
   useEffect(() => {
@@ -177,6 +188,13 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
       postalCode: editPostalCode.trim() || undefined,
     });
     setIsEditingAddress(false);
+  };
+
+  // Handle mileage save
+  const handleSaveMileage = () => {
+    const mileage = parseInt(editMileage) || undefined;
+    onUpdateItem({ mileage });
+    setIsEditingMileage(false);
   };
 
   // Handle key press
@@ -350,8 +368,8 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
             {/* Rent Card */}
             <div
               className={`flex-1 p-3 rounded-xl cursor-pointer transition-all ${isEditingRent
-                  ? 'ring-2 ring-amber-500/50'
-                  : 'hover:ring-1 hover:ring-slate-500/30'
+                ? 'ring-2 ring-amber-500/50'
+                : 'hover:ring-1 hover:ring-slate-500/30'
                 } ${isDark ? 'bg-gradient-to-br from-amber-600/80 to-amber-700/80' : 'bg-gradient-to-br from-amber-500 to-amber-600'}`}
               onClick={() => !isEditingRent && setIsEditingRent(true)}
             >
@@ -420,8 +438,8 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
             {/* Address Card */}
             <div
               className={`flex-1 p-3 rounded-xl cursor-pointer transition-all ${isEditingAddress
-                  ? 'ring-2 ring-indigo-500/50'
-                  : 'hover:ring-1 hover:ring-slate-500/30'
+                ? 'ring-2 ring-indigo-500/50'
+                : 'hover:ring-1 hover:ring-slate-500/30'
                 } ${isDark ? 'bg-slate-800/80' : 'bg-slate-700/90'}`}
               onClick={() => !isEditingAddress && setIsEditingAddress(true)}
             >
@@ -499,9 +517,8 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
           </div>
         </>
       )}
-
-      {/* === OTHER TYPES: Simple editable value === */}
-      {!isFinanceType && !isRealEstate && (
+      {/* === OTHER TYPES: Simple editable value (excludes finance, real estate, and garage) === */}
+      {!isFinanceType && !isRealEstate && !isGarage && (
         <div className="mb-4">
           {isEditingValue ? (
             <div className="flex items-center gap-2">

@@ -54,9 +54,18 @@ const Experience: React.FC<ExperienceProps> = ({
   };
 
   // Calculate target position for the camera based on selection
+  // Add an offset to center the item in the visible area (excluding sidebar)
   const cameraTarget = useMemo<[number, number, number] | null>(() => {
     if (!selection) return null;
-    return getItemWorldPosition(selection.categoryName, selection.item.name, data, selection.item.id);
+    const category = data.find(c => c.name === selection.categoryName);
+    if (!category) return null;
+    const pos = getItemWorldPosition(category.id, selection.item.id, data);
+    if (!pos) return null;
+
+    // Offset the camera target to compensate for the sidebar on the right
+    // With isometric view from [20,20,20], offset in both X and Z to shift "left" on screen
+    const sidebarOffset = 4;
+    return [pos[0] - sidebarOffset, pos[1], pos[2] + sidebarOffset];
   }, [selection, data]);
 
   return (

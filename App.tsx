@@ -4,7 +4,6 @@ import Experience from './components/Experience';
 import UIOverlay from './components/UIOverlay';
 import OnboardingWizard from './components/OnboardingWizard';
 import { Category, LifeItem, Dependency, UserSettings } from './types';
-import { ModalMode } from './components/CreationModal';
 import { useStore } from './store/useStore';
 import { useLifeMapMutations } from './hooks/useLifeMapMutations';
 import { useCategories, useDependencies, useSettings } from './hooks/useLifeMapData';
@@ -57,36 +56,14 @@ const App: React.FC = () => {
     }
   }, [categories, selection, setSelection]);
 
-  // --- HANDLERS ---
-
   const handleOnboardingFinish = async (newData: Category[]) => {
     try {
-      // Iterate through generated categories and create them + their items
       for (const cat of newData) {
-        // 1. Create Category
         await createCategory.mutateAsync({
-          name: cat.name, // Use 'name' not 'category' field
+          name: cat.name,
           color: cat.color,
-          icon: typeof cat.icon === 'string' ? cat.icon : 'HelpCircle' // Ensure icon is string
+          icon: typeof cat.icon === 'string' ? cat.icon : 'HelpCircle'
         });
-
-        // 2. Create Items for this category
-        // Note: In a real app we'd need the ID of the created category from the backend response
-        // but our current mock/implementation flow might be relying on name refetching or similar.
-        // HOWEVER, since we don't have the new ID yet, and our createItem endpoint likely needs it...
-
-        // Wait, standard flow:
-        // We really should wait for the category ID. 
-        // Let's assume createCategory returns the created object with ID.
-        // We'll fetch the fresh category list to get the ID, OR relies on the mutation result.
-        // But `createCategory.mutateAsync` returns the response data.
-
-        // Let's rely on name matching for now if we can't get ID easily or just re-fetch logic.
-        // Actually, let's look at `useLifeMapMutations`... it invalidates queries.
-        // But we need the ID to create items *in* that category.
-
-        // Improvement: We will fetch the category via API or filter from updated list? 
-        // Better: `createCategory` returns the created category.
 
         const createdCat = await api.get<Category[]>(`/categories`).then(res => res.data.find(c => c.name === cat.name));
 
@@ -98,14 +75,13 @@ const App: React.FC = () => {
               value: item.value || "0",
               type: item.type || "text",
               status: item.status || "ok",
-              assetType: (item.assetType as any) || "finance", // Fallback and cast needed temporarily
+              assetType: (item.assetType as any) || "finance",
             });
           }
         }
       }
 
-      // Force refresh of all data
-      window.location.reload(); // Simple way to reset state for now
+      window.location.reload();
 
     } catch (e) {
       console.error("Error saving onboarding data", e);

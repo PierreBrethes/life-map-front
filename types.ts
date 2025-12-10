@@ -123,6 +123,8 @@ export interface LifeItem {
   address?: string;              // Street address
   city?: string;                 // City name
   postalCode?: string;           // Postal/ZIP code
+  // Garage/Vehicle specific
+  mileage?: number;              // Current mileage (km)
 }
 
 export interface Category {
