@@ -248,7 +248,7 @@ const RecurringFlowsWidget: React.FC<RecurringFlowsWidgetProps> = ({
                       <div>
                         <p className={`text-sm font-medium ${textPrimary}`}>{rec.label}</p>
                         <p className={`text-xs ${textSecondary}`}>
-                          {rec.dayOfMonth} • {getNextOccurrence(rec.dayOfMonth)}
+                          {getNextOccurrence(rec.dayOfMonth)}
                         </p>
                       </div>
                     </div>
