@@ -3,7 +3,7 @@ import { SelectionState, Category, ItemType, ItemStatus, LifeItem, UserSettings 
 import * as Icons from 'lucide-react'; // Dynamic Import all icons
 import CreationModal, { ModalMode } from './CreationModal';
 import NotificationWidget from './NotificationWidget';
-import { ItemDetailSidebar } from './sidebar';
+
 import { useLifeMapMutations } from '../hooks/useLifeMapMutations';
 import { useStore } from '../store/useStore';
 import { useSettings } from '../hooks/useLifeMapData';
@@ -33,26 +33,15 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     const settings = settingsData || { theme: 'light', notificationsEnabled: true } as UserSettings;
 
     const [modalMode, setModalMode] = useState<ModalMode>(null);
-    const [activeData, setActiveData] = useState<SelectionState | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Search State
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<{ categoryName: string, item: LifeItem }[]>([]);
 
-    // Local state for edits
-    const [customLabel, setCustomLabel] = useState('');
-
-    // Value Editing State
-    const [isEditingValue, setIsEditingValue] = useState(false);
-    const [editValue, setEditValue] = useState('');
-
     const { updateSettings } = useLifeMapMutations();
 
     const isDark = settings.theme === 'dark';
-
-    // Handler for closing sidebar
-    const onClose = () => setSelection(null);
 
     // Styles based on theme
     const glassPanelClass = isDark
@@ -70,15 +59,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     const textPrimary = isDark ? "text-white" : "text-gray-900";
     const textSecondary = isDark ? "text-slate-400" : "text-gray-500";
 
-    useEffect(() => {
-        if (selection) {
-            setActiveData(selection);
-            setCustomLabel(selection.item.notificationLabel || '');
-            setEditValue(selection.item.value);
-            setIsEditingValue(false);
-        }
-    }, [selection]);
-
     // Search Logic
     useEffect(() => {
         if (!searchQuery.trim()) {
@@ -91,7 +71,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
         categories.forEach(cat => {
             cat.items.forEach(item => {
                 if (item.name.toLowerCase().includes(query)) {
-                    results.push({ categoryName: cat.name, item }); // Use cat.name instead of cat.category
+                    results.push({ categoryName: cat.name, item });
                 }
             });
         });
@@ -106,23 +86,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
         return fallback;
     };
 
-    const getCategoryIcon = (catName: string) => {
-        const category = categories.find(c => c.name === catName); // Use name
-        const colorClass = isDark ? "text-indigo-400" : "text-indigo-600";
-        if (category?.icon) return <span className={colorClass}>{renderIcon(category.icon, <Icons.Box className="w-5 h-5" />)}</span>;
-        return <Icons.Box className={`w-5 h-5 ${isDark ? 'text-slate-400' : 'text-gray-600'}`} />;
-    };
-
-    const getTypeIcon = (type: ItemType) => {
-        const cls = isDark ? "text-slate-500" : "text-gray-400";
-        switch (type) {
-            case 'currency': return <Icons.Wallet size={14} className={cls} />;
-            case 'percentage': return <Icons.Percent size={14} className={cls} />;
-            case 'date': return <Icons.Calendar size={14} className={cls} />;
-            default: return <Icons.FileText size={14} className={cls} />;
-        }
-    };
-
     const getStatusBadge = (status: ItemStatus) => {
         switch (status) {
             case 'critical': return <span className="flex items-center gap-1 text-[10px] font-bold uppercase bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full"><Icons.AlertTriangle size={10} /> Critique</span>;
@@ -131,26 +94,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
         }
     };
 
-    const formatValue = (val: string, type: ItemType) => {
-        if (type === 'currency' && !val.includes('€') && !val.includes('$')) return val + '€';
-        if (type === 'percentage' && !val.includes('%')) return val + '%';
-        return val;
-    };
-
-    const handleLabelUpdate = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (activeData) {
-            onUpdateItem(activeData.categoryName, activeData.item.id, { notificationLabel: customLabel });
-        }
-    };
-
-    const handleValueUpdate = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (activeData) {
-            onUpdateItem(activeData.categoryName, activeData.item.id, { value: editValue });
-            setIsEditingValue(false);
-        }
-    };
 
     return (
         <>
@@ -366,28 +309,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                     </div>
                 </div>
 
-                {/* Side Panel */}
-                <div
-                    className={`
-            pointer-events-auto
-            h-full w-80 sm:w-96
-            absolute right-0 top-0
-            border-l shadow-2xl
-            transform transition-transform duration-500 ease-out
-            ${selection ? 'translate-x-0' : 'translate-x-full'}
-            flex flex-col
-            z-40
-            ${glassPanelClass}
-            `}
-                >
-                    {activeData && (
-                        <ItemDetailSidebar
-                            categoryName={activeData.categoryName}
-                            categoryColor={categories.find(c => c.name === activeData.categoryName)?.color || '#6366f1'}
-                            item={activeData.item}
-                        />
-                    )}
-                </div>
             </div>
         </>
     );

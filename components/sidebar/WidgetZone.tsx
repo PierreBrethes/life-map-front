@@ -9,12 +9,14 @@ interface WidgetZoneProps {
   item: LifeItem;
   isDark: boolean;
   availableWidgets: WidgetType[];
+  categoryName: string;
 }
 
 const WidgetZone: React.FC<WidgetZoneProps> = ({
   item,
   isDark,
   availableWidgets,
+  categoryName
 }) => {
   const {
     orderedWidgets,
@@ -92,10 +94,7 @@ const WidgetZone: React.FC<WidgetZoneProps> = ({
                 <div className={`absolute -top-2 left-0 right-0 h-0.5 rounded-full ${isDark ? 'bg-indigo-500' : 'bg-indigo-400'}`} />
               )}
 
-              {/* Drag Handle (Visible on Hover) */}
-              <div className="absolute -left-3 top-4 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400">
-                <Icons.GripVertical size={14} />
-              </div>
+
 
               {/* Widget Header with Icon */}
               <div className="mb-2 flex items-center gap-2 pl-1">
@@ -107,12 +106,20 @@ const WidgetZone: React.FC<WidgetZoneProps> = ({
                 </span>
               </div>
 
-              {/* Render the actual widget */}
-              <WidgetRenderer
-                widgetType={widgetId}
-                item={item}
-                isDark={isDark}
-              />
+              {/* Render the actual widget inside a relative container for handle positioning */}
+              <div className="relative">
+                {/* Drag Handle (Visible on Hover) - Centered relative to widget */}
+                <div className="absolute -left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 cursor-grab active:cursor-grabbing z-10">
+                  <Icons.GripVertical size={14} />
+                </div>
+
+                <WidgetRenderer
+                  widgetType={widgetId}
+                  item={item}
+                  isDark={isDark}
+                  categoryName={categoryName}
+                />
+              </div>
             </div>
           );
         })}

@@ -58,6 +58,21 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
     icon: 'Stethoscope',
     applicableTo: ['medical', 'health', 'insurance'],
   },
+  {
+    type: 'connections',
+    label: 'Connexions',
+    icon: 'Link',
+    applicableTo: [
+      'default',
+      'current_account', 'savings', 'investments', 'debt',
+      'house', 'apartment',
+      'car', 'motorbike', 'boat', 'plane',
+      'job', 'freelance',
+      'medical', 'sport', 'insurance',
+      'family', 'friends', 'pet',
+      'finance', 'health', 'home', 'nature', 'tech', 'people'
+    ],
+  },
 ];
 
 /**

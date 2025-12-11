@@ -219,7 +219,8 @@ export type WidgetType =
   | 'social-calendar'
   | 'contacts'
   | 'health-body'
-  | 'health-appointments';
+  | 'health-appointments'
+  | 'connections';
 
 /**
  * Widget configuration for the registry

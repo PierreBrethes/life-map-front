@@ -219,6 +219,7 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = ({
           item={item}
           isDark={isDark}
           availableWidgets={availableWidgets}
+          categoryName={categoryName}
         />
 
       </div>

@@ -8,6 +8,8 @@ import { useStore } from './store/useStore';
 import { useLifeMapMutations } from './hooks/useLifeMapMutations';
 import { useCategories, useDependencies, useSettings, useSyncRecurring } from './hooks/useLifeMapData';
 import api from './api/axios';
+import { ItemDetailSidebar } from './components/sidebar';
+import { SelectionState } from './types'; // Ensure correct import if not default
 
 const App: React.FC = () => {
   // --- GLOBAL STORE ---
@@ -17,6 +19,15 @@ const App: React.FC = () => {
     selectedDependencyId, selectDependency,
     showConnections, toggleConnections,
   } = useStore();
+
+  const [activeSidebarData, setActiveSidebarData] = React.useState<typeof selection>(null);
+
+  // Keep active data for exit animation
+  useEffect(() => {
+    if (selection) {
+      setActiveSidebarData(selection);
+    }
+  }, [selection]);
 
   // --- DATA FETCHING ---
   const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
@@ -170,8 +181,8 @@ const App: React.FC = () => {
 
   return (
     <div className={`relative w-full h-screen overflow-hidden transition-colors duration-500 ${isDarkMode ? 'dark bg-slate-950' : 'bg-[#f0f9ff]'}`}>
-
-      {/* Onboarding Wizard (Only shown if data is empty) */}
+      
+      {/* Onboarding Wizard (Overlay on top of everything) */}
       {showOnboarding && <OnboardingWizard onFinish={handleOnboardingFinish} />}
 
       {/* 3D Layer */}
@@ -195,7 +206,7 @@ const App: React.FC = () => {
         </Suspense>
       </div>
 
-      {/* 2D UI Layer */}
+      {/* 2D UI Layer (HUD) */}
       {!showOnboarding && (
         <div className="absolute inset-0 z-10 pointer-events-none">
           <UIOverlay
@@ -206,6 +217,27 @@ const App: React.FC = () => {
           />
         </div>
       )}
+
+      {/* Sidebar (Overlay on the right) */}
+      <div 
+        className={`
+          pointer-events-auto
+          absolute right-0 top-0 h-full w-96
+          border-l shadow-2xl flex flex-col
+          transform transition-transform duration-500 ease-out z-40
+          ${selection ? 'translate-x-0' : 'translate-x-full'}
+          ${isDarkMode ? "bg-slate-900/95 backdrop-blur-xl border-slate-700/50 text-white" : "bg-white/95 backdrop-blur-xl border-gray-200/80 text-gray-800"}
+        `}
+      >
+        {activeSidebarData && (
+          <ItemDetailSidebar
+            categoryName={activeSidebarData.categoryName}
+            categoryColor={categories.find(c => c.name === activeSidebarData.categoryName)?.color || '#6366f1'}
+            item={activeSidebarData.item}
+          />
+        )}
+      </div>
+
     </div>
   );
 };

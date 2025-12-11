@@ -9,3 +9,4 @@ export { default as SocialCalendarWidget } from './SocialCalendarWidget';
 export { default as ContactsWidget } from './ContactsWidget';
 export { default as BodyTrackingWidget } from './BodyTrackingWidget';
 export { default as HealthAppointmentsWidget } from './HealthAppointmentsWidget';
+export { default as DependenciesWidget } from './DependenciesWidget';

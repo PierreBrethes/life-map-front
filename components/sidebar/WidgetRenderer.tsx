@@ -11,6 +11,7 @@ import {
   ContactsWidget,
   BodyTrackingWidget,
   HealthAppointmentsWidget,
+  DependenciesWidget,
 } from '../widgets';
 import { useWidgetData } from '../../hooks/useWidgetData';
 import { useWidgetMutations } from '../../hooks/useWidgetMutations';
@@ -19,9 +20,10 @@ interface WidgetRendererProps {
   widgetType: WidgetType;
   item: LifeItem;
   isDark: boolean;
+  categoryName: string;
 }
 
-const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widgetType, item, isDark }) => {
+const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widgetType, item, isDark, categoryName }) => {
   // Data Loading
   const {
     events, contacts,
@@ -33,7 +35,7 @@ const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widgetType, item, isDar
 
   // Mutations
   const {
-    createEvent, updateEvent, deleteEvent,
+    createEvent, deleteEvent,
     createContact, updateContact, deleteContact,
     createMetric, deleteMetric,
     createAppointment, updateAppointment, deleteAppointment,
@@ -215,6 +217,14 @@ const WidgetRenderer: React.FC<WidgetRendererProps> = ({ widgetType, item, isDar
           onDeleteAppointment={(id) => deleteAppointment.mutate(id)}
           itemId={item.id}
           isDark={isDark}
+        />
+      );
+    case 'connections':
+      return (
+        <DependenciesWidget
+            itemId={item.id}
+            categoryName={categoryName}
+            isDark={isDark}
         />
       );
     default:
