@@ -4,6 +4,7 @@ import { healthApi } from '../api/endpoints/health';
 import { financeApi } from '../api/endpoints/finance';
 import { alertsApi } from '../api/endpoints/alerts';
 import { realEstateApi } from '../api/endpoints/real_estate';
+import { recurringApi } from '../api/endpoints/recurring';
 
 export const useWidgetData = (itemId: string | undefined) => {
   const enabled = !!itemId;
@@ -47,6 +48,13 @@ export const useWidgetData = (itemId: string | undefined) => {
     enabled
   });
 
+  // Recurring Transactions
+  const { data: recurring = [] } = useQuery({
+    queryKey: ['recurring', itemId],
+    queryFn: () => recurringApi.getAll(itemId),
+    enabled
+  });
+
   // Real Estate
   const { data: valuations = [] } = useQuery({
     queryKey: ['real-estate-valuations', itemId],
@@ -76,8 +84,9 @@ export const useWidgetData = (itemId: string | undefined) => {
   return {
     events, contacts,
     bodyMetrics, appointments,
-    history, subscriptions,
+    history, subscriptions, recurring,
     valuations, energy, maintenance,
     alerts
   };
 };
+

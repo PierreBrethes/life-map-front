@@ -1,11 +1,12 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import * as Icons from 'lucide-react';
-import { LifeItem, Subscription } from '../../types';
+import { LifeItem, Subscription, RecurringTransaction, WidgetType } from '../../types';
 import SidebarHeader from './SidebarHeader';
 import StatCard from './StatCard';
+import WidgetZone from './WidgetZone';
 import {
   HistoryWidget,
-  SubscriptionsWidget,
+  RecurringFlowsWidget,
   AlertsWidget,
   PropertyWidget,
   EnergyWidget,
@@ -150,7 +151,7 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = ({
   const {
     events, contacts,
     bodyMetrics, appointments,
-    history, subscriptions,
+    history, subscriptions, recurring,
     valuations, energy, maintenance,
     alerts
   } = useWidgetData(item.id);
@@ -163,6 +164,7 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = ({
     createAppointment, updateAppointment, deleteAppointment,
     createHistoryEntry, deleteHistoryEntry,
     createSubscription, updateSubscription, deleteSubscription,
+    createRecurring, updateRecurring, deleteRecurring,
     createValuation, updateValuation,
     createEnergyRecord, deleteEnergyRecord,
     createMaintenanceTask, updateMaintenanceTask, deleteMaintenanceTask,
@@ -287,7 +289,7 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = ({
   const isRealEstate = item.assetType && REAL_ESTATE_TYPES.includes(item.assetType);
 
   const showHistoryWidget = isWidgetAvailable('history', item.assetType);
-  const showSubscriptionsWidget = isWidgetAvailable('subscriptions', item.assetType);
+  const showRecurringFlowsWidget = isWidgetAvailable('recurring-flows', item.assetType);
   const showPropertyWidget = isWidgetAvailable('property', item.assetType);
   const showEnergyWidget = isWidgetAvailable('energy', item.assetType);
   const showMaintenanceWidget = isWidgetAvailable('maintenance', item.assetType);
@@ -296,6 +298,183 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = ({
   const showContactsWidget = isWidgetAvailable('contacts', item.assetType);
   const showBodyTrackingWidget = isWidgetAvailable('health-body', item.assetType);
   const showHealthAppointmentsWidget = isWidgetAvailable('health-appointments', item.assetType);
+
+  // Compute available widgets for drag/drop zone
+  const availableWidgets = useMemo(() => {
+    const widgets: WidgetType[] = [];
+    widgets.push('alerts'); // Always available
+    if (showHistoryWidget) widgets.push('history');
+    if (showRecurringFlowsWidget) widgets.push('recurring-flows');
+    if (showPropertyWidget) widgets.push('property');
+    if (showEnergyWidget) widgets.push('energy');
+    if (showMaintenanceWidget) widgets.push('maintenance');
+    if (showSocialCalendarWidget) widgets.push('social-calendar');
+    if (showBirthdayWidget) widgets.push('birthdays');
+    if (showContactsWidget) widgets.push('contacts');
+    if (showBodyTrackingWidget) widgets.push('health-body');
+    if (showHealthAppointmentsWidget) widgets.push('health-appointments');
+    return widgets;
+  }, [
+    showHistoryWidget, showRecurringFlowsWidget, showPropertyWidget,
+    showEnergyWidget, showMaintenanceWidget, showSocialCalendarWidget,
+    showBirthdayWidget, showContactsWidget, showBodyTrackingWidget,
+    showHealthAppointmentsWidget
+  ]);
+
+  // Render widget by type
+  const renderWidget = useCallback((widgetType: WidgetType) => {
+    switch (widgetType) {
+      case 'alerts':
+        return (
+          <AlertsWidget
+            alerts={alerts}
+            onAddAlert={(a) => createAlert.mutate(a)}
+            onDeleteAlert={(id) => deleteAlert.mutate(id)}
+            onToggleAlert={handleToggleAlert}
+            activeAlertsCount={activeAlertsCount}
+            itemId={item.id}
+            isDark={isDark}
+          />
+        );
+      case 'history':
+        return (
+          <HistoryWidget
+            history={history}
+            onAddEntry={(e) => createHistoryEntry.mutate(e)}
+            onDeleteEntry={(id) => deleteHistoryEntry.mutate(id)}
+            itemId={item.id}
+            isDark={isDark}
+          />
+        );
+      case 'recurring-flows':
+        return (
+          <RecurringFlowsWidget
+            recurring={recurring}
+            onAddRecurring={(r) => createRecurring.mutate(r)}
+            onDeleteRecurring={(id) => deleteRecurring.mutate(id)}
+            onToggleRecurring={(id, isActive) => updateRecurring.mutate({ id, payload: { isActive } })}
+            targetAccountId={item.id}
+            isDark={isDark}
+          />
+        );
+      case 'property':
+        return (
+          <PropertyWidget
+            valuation={valuations[0] || null}
+            onUpdateValuation={(v) => valuations[0] ? updateValuation.mutate({ id: valuations[0].id, payload: v }) : null}
+            onCreateValuation={(v) => createValuation.mutate(v)}
+            itemId={item.id}
+            isDark={isDark}
+          />
+        );
+      case 'energy':
+        return (
+          <EnergyWidget
+            consumption={energy}
+            onAddEntry={(e) => createEnergyRecord.mutate(e)}
+            onDeleteEntry={(id) => deleteEnergyRecord.mutate(id)}
+            itemId={item.id}
+            isDark={isDark}
+          />
+        );
+      case 'maintenance':
+        return (
+          <MaintenanceWidget
+            tasks={maintenance}
+            onAddTask={(t) => createMaintenanceTask.mutate({ ...t, createdAt: Date.now() })}
+            onUpdateTask={(id, t) => updateMaintenanceTask.mutate({ id, payload: t })}
+            onDeleteTask={(id) => deleteMaintenanceTask.mutate(id)}
+            itemId={item.id}
+            isDark={isDark}
+          />
+        );
+      case 'social-calendar':
+        return (
+          <SocialCalendarWidget
+            events={events}
+            upcomingEvents={upcomingEvents}
+            onAddEvent={(e) => createEvent.mutate(e)}
+            onDeleteEvent={(id) => deleteEvent.mutate(id)}
+            itemId={item.id}
+            isDark={isDark}
+          />
+        );
+      case 'birthdays':
+        return (
+          <BirthdayWidget
+            nextBirthday={nextBirthday ? {
+              ...nextBirthday,
+              age: 0,
+              daysUntil: 0,
+              nextBirthdayDate: 0
+            } : null}
+            monthBirthdays={monthBirthdays.map(c => ({
+              ...c,
+              age: 0,
+              daysUntil: 0,
+              nextBirthdayDate: 0
+            }))}
+            contacts={contacts}
+            isDark={isDark}
+          />
+        );
+      case 'contacts':
+        return (
+          <ContactsWidget
+            contacts={contacts}
+            overdueContacts={overdueContacts}
+            onAddContact={(c) => createContact.mutate(c)}
+            onUpdateContact={(id, c) => updateContact.mutate({ id, payload: c })}
+            onDeleteContact={(id) => deleteContact.mutate(id)}
+            itemId={item.id}
+            isDark={isDark}
+          />
+        );
+      case 'health-body':
+        return (
+          <BodyTrackingWidget
+            metrics={bodyMetrics}
+            latestMetric={latestMetric}
+            bmi={bmi ? bmi.toFixed(1) : undefined}
+            weightTrend={{ value: '0', direction: 'stable', percentage: '0%' }}
+            onAddMetric={(m) => createMetric.mutate(m)}
+            onDeleteMetric={(id) => deleteMetric.mutate(id)}
+            itemId={item.id}
+            isDark={isDark}
+          />
+        );
+      case 'health-appointments':
+        return (
+          <HealthAppointmentsWidget
+            appointments={appointments}
+            upcomingAppointments={upcomingAppointments}
+            onAddAppointment={(a) => createAppointment.mutate(a)}
+            onUpdateAppointment={(id, a) => updateAppointment.mutate({ id, payload: a })}
+            onDeleteAppointment={(id) => deleteAppointment.mutate(id)}
+            itemId={item.id}
+            isDark={isDark}
+          />
+        );
+      default:
+        return null;
+    }
+  }, [
+    alerts, activeAlertsCount, handleToggleAlert,
+    history, recurring, valuations, energy, maintenance, events, contacts,
+    bodyMetrics, appointments, upcomingEvents, upcomingAppointments,
+    nextBirthday, monthBirthdays, overdueContacts, latestMetric, bmi,
+    item.id, isDark,
+    createAlert, deleteAlert,
+    createHistoryEntry, deleteHistoryEntry,
+    createRecurring, deleteRecurring, updateRecurring,
+    createValuation, updateValuation,
+    createEnergyRecord, deleteEnergyRecord,
+    createMaintenanceTask, updateMaintenanceTask, deleteMaintenanceTask,
+    createEvent, deleteEvent,
+    createContact, updateContact, deleteContact,
+    createMetric, deleteMetric,
+    createAppointment, updateAppointment, deleteAppointment
+  ]);
 
   const textSecondary = isDark ? 'text-slate-400' : 'text-gray-500';
   const isGarage = item.assetType && GARAGE_TYPES.includes(item.assetType);
@@ -376,137 +555,13 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = ({
           </div>
         )}
 
-        {/* Widgets */}
-        <AlertsWidget
-          alerts={alerts}
-          onAddAlert={(a) => createAlert.mutate(a)}
-          onDeleteAlert={(id) => deleteAlert.mutate(id)}
-          onToggleAlert={handleToggleAlert}
-          activeAlertsCount={activeAlertsCount}
-          itemId={item.id}
+        {/* Widgets - Draggable Zone */}
+        <WidgetZone
+          item={item}
           isDark={isDark}
+          availableWidgets={availableWidgets}
+          renderWidget={renderWidget}
         />
-
-        {showHistoryWidget && (
-          <HistoryWidget
-            history={history}
-            onAddEntry={(e) => createHistoryEntry.mutate(e)}
-            onDeleteEntry={(id) => deleteHistoryEntry.mutate(id)}
-            itemId={item.id}
-            isDark={isDark}
-          />
-        )}
-
-        {showSubscriptionsWidget && (
-          <SubscriptionsWidget
-            subscriptions={subscriptions}
-            totalMonthly={totalMonthlySubscriptions}
-            onAddSubscription={(s) => createSubscription.mutate(s)}
-            onDeleteSubscription={(id) => deleteSubscription.mutate(id)}
-            onToggleSubscription={handleToggleSubscription}
-            getNextBillingDate={getNextBillingDate}
-            itemId={item.id}
-            isDark={isDark}
-          />
-        )}
-
-        {showPropertyWidget && (
-          <PropertyWidget
-            valuation={valuations[0] || null} // Assuming single valuation for now
-            onUpdateValuation={(v) => valuations[0] ? updateValuation.mutate({ id: valuations[0].id, payload: v }) : null}
-            onCreateValuation={(v) => createValuation.mutate(v)}
-            itemId={item.id}
-            isDark={isDark}
-          />
-        )}
-
-        {showEnergyWidget && (
-          <EnergyWidget
-            consumption={energy}
-            onAddEntry={(e) => createEnergyRecord.mutate(e)}
-            onDeleteEntry={(id) => deleteEnergyRecord.mutate(id)}
-            itemId={item.id}
-            isDark={isDark}
-          />
-        )}
-
-        {showMaintenanceWidget && (
-          <MaintenanceWidget
-            tasks={maintenance}
-            onAddTask={(t) => createMaintenanceTask.mutate({ ...t, createdAt: Date.now() })}
-            onUpdateTask={(id, t) => updateMaintenanceTask.mutate({ id, payload: t })}
-            onDeleteTask={(id) => deleteMaintenanceTask.mutate(id)}
-            itemId={item.id}
-            isDark={isDark}
-          />
-        )}
-
-        {showBirthdayWidget && (
-          <BirthdayWidget
-            nextBirthday={nextBirthday ? {
-              ...nextBirthday,
-              age: 0, // Placeholder, would need real calc
-              daysUntil: 0, // Placeholder
-              nextBirthdayDate: 0 // Placeholder
-            } : null}
-            monthBirthdays={monthBirthdays.map(c => ({
-              ...c,
-              age: 0,
-              daysUntil: 0,
-              nextBirthdayDate: 0
-            }))}
-            contacts={contacts}
-            isDark={isDark}
-          />
-        )}
-
-        {showSocialCalendarWidget && (
-          <SocialCalendarWidget
-            events={events}
-            upcomingEvents={upcomingEvents}
-            onAddEvent={(e) => createEvent.mutate(e)}
-            onDeleteEvent={(id) => deleteEvent.mutate(id)}
-            itemId={item.id}
-            isDark={isDark}
-          />
-        )}
-
-        {showContactsWidget && (
-          <ContactsWidget
-            contacts={contacts}
-            overdueContacts={overdueContacts}
-            onAddContact={(c) => createContact.mutate(c)}
-            onUpdateContact={(id, c) => updateContact.mutate({ id, payload: c })}
-            onDeleteContact={(id) => deleteContact.mutate(id)}
-            itemId={item.id}
-            isDark={isDark}
-          />
-        )}
-
-        {showBodyTrackingWidget && (
-          <BodyTrackingWidget
-            metrics={bodyMetrics}
-            latestMetric={latestMetric}
-            bmi={bmi ? bmi.toFixed(1) : undefined}
-            weightTrend={{ value: '0', direction: 'stable', percentage: '0%' }}
-            onAddMetric={(m) => createMetric.mutate(m)}
-            onDeleteMetric={(id) => deleteMetric.mutate(id)}
-            itemId={item.id}
-            isDark={isDark}
-          />
-        )}
-
-        {showHealthAppointmentsWidget && (
-          <HealthAppointmentsWidget
-            appointments={appointments}
-            upcomingAppointments={upcomingAppointments}
-            onAddAppointment={(a) => createAppointment.mutate(a)}
-            onUpdateAppointment={(id, a) => updateAppointment.mutate({ id, payload: a })}
-            onDeleteAppointment={(id) => deleteAppointment.mutate(id)}
-            itemId={item.id}
-            isDark={isDark}
-          />
-        )}
 
       </div>
 

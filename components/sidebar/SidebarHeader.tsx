@@ -338,7 +338,7 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
 
           {/* Sync Toggle */}
           <div
-            className={`flex items-center justify-between p-3 rounded-xl mb-4 cursor-pointer transition-colors ${isDark ? 'bg-slate-800/50 hover:bg-slate-800/70' : 'bg-gray-100 hover:bg-gray-200'
+            className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-colors ${isDark ? 'bg-slate-800/50 hover:bg-slate-800/70' : 'bg-gray-100 hover:bg-gray-200'
               }`}
             onClick={() => onToggleSyncBalance(!item.syncBalanceWithBlock)}
           >

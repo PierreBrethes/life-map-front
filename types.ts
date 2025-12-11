@@ -125,6 +125,8 @@ export interface LifeItem {
   postalCode?: string;           // Postal/ZIP code
   // Garage/Vehicle specific
   mileage?: number;              // Current mileage (km)
+  // Widget customization
+  widgetOrder?: string[];        // Array of WidgetType in display order
 }
 
 export interface Category {
@@ -183,12 +185,37 @@ export interface Subscription {
   isActive: boolean;
 }
 
+// ============================================
+// RECURRING TRANSACTIONS
+// ============================================
+
+/**
+ * Recurring transaction for automatic balance updates
+ */
+export interface RecurringTransaction {
+  id: string;
+  sourceType: 'subscription' | 'salary' | 'rent' | 'insurance' | 'custom';
+  sourceItemId?: string;       // Link to subscription/insurance source item
+  targetAccountId: string;     // Bank account to debit/credit
+  amount: number;              // Positive = income, Negative = expense
+  dayOfMonth: number;          // 1-31
+  label: string;
+  category: 'income' | 'expense' | 'transfer';
+  isActive: boolean;
+  startDate: number;           // Timestamp
+  endDate?: number;            // Optional end date
+  lastProcessedDate?: number;  // Last processed timestamp
+  icon?: string;               // Lucide icon name
+  color?: string;              // Brand/category color hex
+}
+
 /**
  * Widget type identifiers
  */
 export type WidgetType =
+  | 'alerts'
   | 'history'
-  | 'subscriptions'
+  | 'recurring-flows'
   | 'goals'
   | 'maintenance'
   | 'deadlines'

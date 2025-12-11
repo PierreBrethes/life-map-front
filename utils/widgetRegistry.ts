@@ -11,10 +11,10 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
     applicableTo: ['current_account', 'savings', 'investments', 'finance'],
   },
   {
-    type: 'subscriptions',
-    label: 'Abonnements',
-    icon: 'CreditCard',
-    applicableTo: ['current_account', 'finance'],
+    type: 'recurring-flows',
+    label: 'Flux Récurrents',
+    icon: 'RefreshCw',
+    applicableTo: ['current_account', 'savings', 'finance'],
   },
   {
     type: 'goals',

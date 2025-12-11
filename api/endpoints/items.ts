@@ -43,4 +43,10 @@ export const itemsApi = {
   delete: async (id: string) => {
     await api.delete(`/items/${id}`);
   },
+
+  updateWidgetOrder: async (id: string, order: string[]) => {
+    const { data } = await api.put<LifeItem>(`/items/${id}/widget-order`, { order });
+    return data;
+  },
 };
+

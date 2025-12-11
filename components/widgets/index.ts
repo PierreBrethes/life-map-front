@@ -1,6 +1,6 @@
 // Widget components barrel export
 export { default as HistoryWidget } from './HistoryWidget';
-export { default as SubscriptionsWidget } from './SubscriptionsWidget';
+export { default as RecurringFlowsWidget } from './RecurringFlowsWidget';
 export { default as AlertsWidget } from './AlertsWidget';
 export { default as PropertyWidget } from './PropertyWidget';
 export { default as EnergyWidget } from './EnergyWidget';

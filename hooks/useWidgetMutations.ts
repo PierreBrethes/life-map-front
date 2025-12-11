@@ -4,6 +4,7 @@ import { healthApi } from '../api/endpoints/health';
 import { financeApi } from '../api/endpoints/finance';
 import { alertsApi } from '../api/endpoints/alerts';
 import { realEstateApi } from '../api/endpoints/real_estate';
+import { recurringApi } from '../api/endpoints/recurring';
 
 export const useWidgetMutations = () => {
   const queryClient = useQueryClient();
@@ -38,6 +39,11 @@ export const useWidgetMutations = () => {
     updateSubscription: useMutation({ mutationFn: ({ id, payload }: any) => financeApi.updateSubscription(id, payload), onSuccess: () => invalidate('finance-subscriptions') }),
     deleteSubscription: useMutation({ mutationFn: financeApi.deleteSubscription, onSuccess: () => invalidate('finance-subscriptions') }),
 
+    // Recurring Transactions
+    createRecurring: useMutation({ mutationFn: recurringApi.create, onSuccess: () => invalidate('recurring') }),
+    updateRecurring: useMutation({ mutationFn: ({ id, payload }: any) => recurringApi.update(id, payload), onSuccess: () => invalidate('recurring') }),
+    deleteRecurring: useMutation({ mutationFn: recurringApi.delete, onSuccess: () => invalidate('recurring') }),
+
     // Real Estate
     createValuation: useMutation({ mutationFn: realEstateApi.createValuation, onSuccess: () => invalidate('real-estate-valuations') }),
     updateValuation: useMutation({ mutationFn: ({ id, payload }: any) => realEstateApi.updateValuation(id, payload), onSuccess: () => invalidate('real-estate-valuations') }),
@@ -55,3 +61,4 @@ export const useWidgetMutations = () => {
     deleteAlert: useMutation({ mutationFn: alertsApi.delete, onSuccess: () => invalidate('alerts') }),
   };
 };
+

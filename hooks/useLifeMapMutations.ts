@@ -3,6 +3,7 @@ import { itemsApi } from '../api/endpoints/items';
 import { categoriesApi } from '../api/endpoints/categories';
 import { dependenciesApi } from '../api/endpoints/dependencies';
 import { settingsApi } from '../api/endpoints/settings';
+import { recurringApi } from '../api/endpoints/recurring';
 
 export const useLifeMapMutations = () => {
   const queryClient = useQueryClient();
@@ -47,6 +48,23 @@ export const useLifeMapMutations = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['dependencies'] }),
   });
 
+  // --- RECURRING TRANSACTIONS ---
+  const createRecurring = useMutation({
+    mutationFn: recurringApi.create,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['recurring'] }),
+  });
+
+  const updateRecurring = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
+      recurringApi.update(id, payload),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['recurring'] }),
+  });
+
+  const deleteRecurring = useMutation({
+    mutationFn: recurringApi.delete,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['recurring'] }),
+  });
+
   return {
     createItem,
     updateItem,
@@ -54,6 +72,10 @@ export const useLifeMapMutations = () => {
     createCategory,
     createDependency,
     deleteDependency,
-    updateSettings
+    updateSettings,
+    createRecurring,
+    updateRecurring,
+    deleteRecurring,
   };
 };
+

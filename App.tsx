@@ -1,12 +1,12 @@
 
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useRef } from 'react';
 import Experience from './components/Experience';
 import UIOverlay from './components/UIOverlay';
 import OnboardingWizard from './components/OnboardingWizard';
 import { Category, LifeItem, Dependency, UserSettings } from './types';
 import { useStore } from './store/useStore';
 import { useLifeMapMutations } from './hooks/useLifeMapMutations';
-import { useCategories, useDependencies, useSettings } from './hooks/useLifeMapData';
+import { useCategories, useDependencies, useSettings, useSyncRecurring } from './hooks/useLifeMapData';
 import api from './api/axios';
 
 const App: React.FC = () => {
@@ -22,6 +22,28 @@ const App: React.FC = () => {
   const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
   const { data: dependencies = [] } = useDependencies();
   const { data: settings } = useSettings();
+
+  // --- RECURRING SYNC ---
+  const syncRecurring = useSyncRecurring();
+  const hasSyncedRef = useRef(false);
+
+  // Sync recurring transactions on first load (after categories are loaded)
+  useEffect(() => {
+    if (!isLoadingCategories && categories.length > 0 && !hasSyncedRef.current) {
+      hasSyncedRef.current = true;
+      syncRecurring.mutate(undefined, {
+        onSuccess: (result) => {
+          if (result.processedCount > 0) {
+            console.log(`[LifeMap] Synced ${result.processedCount} recurring transactions`);
+          }
+        },
+        onError: (err) => {
+          // Silent fail - backend may not have the endpoint yet
+          console.debug('[LifeMap] Recurring sync not available:', err);
+        },
+      });
+    }
+  }, [isLoadingCategories, categories.length]);
 
   // --- MUTATIONS ---
   const {
