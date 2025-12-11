@@ -21,7 +21,6 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onFinish }) => {
         { id: 'realestate', label: 'Biens Immobiliers', icon: Home, color: '#14b8a6', count: 1 },
         { id: 'health', label: 'Santé & Bien-être', icon: Heart, color: '#10b981', count: 1 },
         { id: 'family', label: 'Famille & Amis', icon: Users, color: '#f59e0b', count: 0 },
-        { id: 'travel', label: 'Projets Voyage', icon: Plane, color: '#3b82f6', count: 0 },
     ]);
 
     const updateCount = (id: string, delta: number) => {
@@ -105,24 +104,6 @@ const OnboardingWizard: React.FC<OnboardingWizardProps> = ({ onFinish }) => {
                 });
             }
             categories.push({ id: genId(), name: 'Famille', color: '#f59e0b', icon: 'Users', items });
-        }
-
-        // 5. Travel
-        const travelConfig = areas.find(a => a.id === 'travel');
-        if ((travelConfig?.count || 0) > 0) {
-            const items: LifeItem[] = [];
-            for (let i = 0; i < (travelConfig?.count || 0); i++) {
-                items.push({
-                    id: genId(),
-                    name: `Voyage ${i + 1}`,
-                    value: 'Destination',
-                    type: 'text',
-                    status: 'ok',
-                    assetType: 'travel'
-                });
-            }
-            // Check if Loisirs exists or create it
-            categories.push({ id: genId(), name: 'Loisirs', color: '#3b82f6', icon: 'Plane', items });
         }
 
         onFinish(categories);

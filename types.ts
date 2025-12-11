@@ -88,19 +88,16 @@ export type AssetType =
   // Finances
   | 'current_account' | 'savings' | 'investments' | 'debt'
   // Immobilier
-  | 'house' | 'apartment' | 'land' | 'parking'
+  | 'house' | 'apartment'
   // Garage
   | 'car' | 'motorbike' | 'boat' | 'plane'
   // Carrière
-  | 'job' | 'freelance' | 'education' | 'skill'
+  | 'job' | 'freelance'
   // Santé
-  | 'medical' | 'sport' | 'insurance' | 'ambulance' | 'hospital' | 'doctor'
-  // Loisirs
-  | 'travel' | 'hobby_creative' | 'hobby_tech'
+  | 'medical' | 'sport' | 'insurance'
   // Social
   | 'family' | 'friends' | 'pet'
-  | 'bench' | 'gift' | 'phone'
-  // Legacy / Fallbacks (gardés pour compatibilité si nécessaire, ou mappés)
+  // Legacy / Fallbacks
   | 'finance' | 'health' | 'home' | 'nature' | 'tech' | 'people';
 
 export interface LifeItem {
@@ -216,13 +213,10 @@ export type WidgetType =
   | 'alerts'
   | 'history'
   | 'recurring-flows'
-  | 'goals'
   | 'maintenance'
-  | 'deadlines'
   | 'property'
   | 'energy'
   | 'social-calendar'
-  | 'birthdays'
   | 'contacts'
   | 'health-body'
   | 'health-appointments';

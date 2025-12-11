@@ -1,23 +1,20 @@
-import React, { useMemo, ReactNode } from 'react';
-import * as Icons from 'lucide-react';
-import { LifeItem, WidgetType } from '../../types';
+import React, { useRef } from 'react';
 import { useWidgetOrder } from '../../hooks/useWidgetOrder';
+import { WidgetType, LifeItem } from '../../types';
+import { WIDGET_REGISTRY } from '../../utils/widgetRegistry';
+import * as Icons from 'lucide-react';
+import WidgetRenderer from './WidgetRenderer';
 
 interface WidgetZoneProps {
   item: LifeItem;
   isDark: boolean;
   availableWidgets: WidgetType[];
-  renderWidget: (widgetType: WidgetType) => ReactNode | null;
 }
 
-/**
- * WidgetZone - Manages drag and drop ordering for sidebar widgets
- */
 const WidgetZone: React.FC<WidgetZoneProps> = ({
   item,
   isDark,
   availableWidgets,
-  renderWidget,
 }) => {
   const {
     orderedWidgets,
@@ -33,75 +30,93 @@ const WidgetZone: React.FC<WidgetZoneProps> = ({
     availableWidgets,
   });
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic Icon Renderer
+  const getWidgetIcon = (iconName: string, fallback: any) => {
+    const IconComponent = (Icons as any)[iconName];
+    if (IconComponent) return <IconComponent size={14} />;
+    return fallback;
+  };
+
   return (
-    <div className="space-y-4 relative">
-      {/* Saving indicator */}
-      {isSaving && (
-        <div className={`absolute -top-2 right-0 flex items-center gap-1 text-xs ${
-          isDark ? 'text-slate-400' : 'text-gray-500'
-        }`}>
-          <Icons.Loader2 size={10} className="animate-spin" />
-          <span>Saving...</span>
-        </div>
-      )}
+    <div className="space-y-4" ref={containerRef}>
+      <div className="flex items-center justify-between px-1">
+        <h3 className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+          Widgets
+        </h3>
+        {/* Saving Indicator */}
+        {isSaving && (
+          <span className="text-[10px] text-slate-500 animate-pulse">
+            Enregistrement...
+          </span>
+        )}
+      </div>
 
-      {/* Render widgets in order */}
-      {orderedWidgets.map(widgetType => {
-        const widget = renderWidget(widgetType);
-        if (!widget) return null;
+      <div className="space-y-4 min-h-[100px]">
+        {orderedWidgets.map((widgetId, index) => {
+          const registryEntry = WIDGET_REGISTRY.find(w => w.type === widgetId);
+          if (!registryEntry) return null;
 
-        const isDragging = dragState.draggingType === widgetType;
-        const isDropTarget = dragState.dropTargetType === widgetType;
+          const isDragging = dragState.draggingType === widgetId;
+          const isDropTarget = dragState.dropTargetType === widgetId;
 
-        return (
-          <div
-            key={widgetType}
-            draggable
-            onDragStart={(e) => {
-              e.dataTransfer.effectAllowed = 'move';
-              e.dataTransfer.setData('text/plain', widgetType);
-              handleDragStart(widgetType);
-            }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.dataTransfer.dropEffect = 'move';
-              handleDragOver(widgetType);
-            }}
-            onDrop={(e) => {
-              e.preventDefault();
-              handleDrop();
-            }}
-            onDragEnd={handleDragEnd}
-            className={`
-              relative transition-all duration-200 group cursor-grab active:cursor-grabbing
-              ${isDragging ? 'opacity-50 scale-[0.98]' : ''}
-            `}
-          >
-            {/* Drop indicator line */}
-            {isDropTarget && (
-              <div className={`
-                absolute -top-2 left-0 right-0 h-0.5 rounded-full z-10
-                ${isDark ? 'bg-violet-500' : 'bg-violet-600'}
-              `} />
-            )}
-
-            {/* Drag handle indicator */}
+          return (
             <div
+              key={widgetId}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.effectAllowed = 'move';
+                // We use the ID as data
+                e.dataTransfer.setData('text/plain', widgetId); 
+                handleDragStart(widgetId);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                handleDragOver(widgetId);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                handleDrop();
+              }}
+              onDragEnd={handleDragEnd}
               className={`
-                absolute -left-0.5 top-1/2 -translate-y-1/2 -translate-x-full
-                opacity-0 group-hover:opacity-100
-                p-1.5 rounded-l transition-opacity
-                ${isDark ? 'text-slate-600 hover:text-slate-400' : 'text-gray-300 hover:text-gray-500'}
+                group relative transition-all duration-300
+                ${isDragging ? 'opacity-50 scale-95' : 'opacity-100'}
+                cursor-grab active:cursor-grabbing
               `}
             >
-              <Icons.GripVertical size={12} />
-            </div>
+              {/* Drop target indicator */}
+              {isDropTarget && !isDragging && (
+                <div className={`absolute -top-2 left-0 right-0 h-0.5 rounded-full ${isDark ? 'bg-indigo-500' : 'bg-indigo-400'}`} />
+              )}
 
-            {/* Widget content */}
-            {widget}
-          </div>
-        );
-      })}
+              {/* Drag Handle (Visible on Hover) */}
+              <div className="absolute -left-3 top-4 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400">
+                <Icons.GripVertical size={14} />
+              </div>
+
+              {/* Widget Header with Icon */}
+              <div className="mb-2 flex items-center gap-2 pl-1">
+                <span className={isDark ? 'text-indigo-400' : 'text-indigo-600'}>
+                  {getWidgetIcon(registryEntry.icon, <Icons.Box size={14} />)}
+                </span>
+                <span className={`text-xs font-semibold ${isDark ? 'text-slate-300' : 'text-gray-500'}`}>
+                  {registryEntry.label}
+                </span>
+              </div>
+
+              {/* Render the actual widget */}
+              <WidgetRenderer
+                widgetType={widgetId}
+                item={item}
+                isDark={isDark}
+              />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { SelectionState, Category, ItemType, ItemStatus, LifeItem, UserSettings } from '../types';
 import * as Icons from 'lucide-react'; // Dynamic Import all icons
@@ -6,38 +5,33 @@ import CreationModal, { ModalMode } from './CreationModal';
 import NotificationWidget from './NotificationWidget';
 import { ItemDetailSidebar } from './sidebar';
 import { useLifeMapMutations } from '../hooks/useLifeMapMutations';
+import { useStore } from '../store/useStore';
+import { useSettings } from '../hooks/useLifeMapData';
 
 interface UIOverlayProps {
-    selection: SelectionState | null;
     categories: Category[];
-    onClose: () => void;
     onSelect: (categoryName: string, item: LifeItem) => void;
     onUpdateItem: (categoryName: string, itemId: string, updates: Partial<LifeItem>) => void;
     onDelete: () => void;
-    showConnections: boolean;
-    onToggleConnections: () => void;
-    settings: UserSettings;
-
-    // Connection Mode Props
-    connectionMode: 'idle' | 'selecting-source' | 'selecting-target';
-    onStartConnection: () => void;
-    onCancelConnection: () => void;
 }
 
 const UIOverlay: React.FC<UIOverlayProps> = ({
-    selection,
     categories,
-    onClose,
     onSelect,
     onUpdateItem,
     onDelete,
-    showConnections,
-    onToggleConnections,
-    settings,
-    connectionMode,
-    onStartConnection,
-    onCancelConnection
 }) => {
+    // Global Store
+    const {
+        selection, setSelection,
+        connectionMode, startConnection, cancelConnection,
+        showConnections, toggleConnections
+    } = useStore();
+
+    // Data Hooks
+    const { data: settingsData } = useSettings();
+    const settings = settingsData || { theme: 'light', notificationsEnabled: true } as UserSettings;
+
     const [modalMode, setModalMode] = useState<ModalMode>(null);
     const [activeData, setActiveData] = useState<SelectionState | null>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -56,6 +50,9 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     const { updateSettings } = useLifeMapMutations();
 
     const isDark = settings.theme === 'dark';
+
+    // Handler for closing sidebar
+    const onClose = () => setSelection(null);
 
     // Styles based on theme
     const glassPanelClass = isDark
@@ -178,7 +175,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                             </span>
                         </div>
                         <button
-                            onClick={onCancelConnection}
+                            onClick={cancelConnection}
                             className="p-1 hover:bg-white/20 rounded-full transition-colors"
                         >
                             <Icons.X size={18} />
@@ -322,7 +319,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
                         {/* TOGGLE CONNECTIONS BUTTON */}
                         <button
-                            onClick={onToggleConnections}
+                            onClick={toggleConnections}
                             className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${showConnections
                                 ? (isDark ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/50' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200')
                                 : (isDark ? 'bg-slate-800 text-slate-500 hover:bg-slate-700' : 'bg-gray-50 text-gray-400 hover:bg-gray-100')
@@ -336,7 +333,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
                         {/* ADD CONNECTION BUTTON */}
                         <button
-                            onClick={connectionMode === 'idle' ? onStartConnection : onCancelConnection}
+                            onClick={connectionMode === 'idle' ? () => startConnection(selection || undefined) : cancelConnection}
                             className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${connectionMode !== 'idle'
                                 ? 'bg-red-500 hover:bg-red-600 text-white shadow-md shadow-red-500/20'
                                 : (isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-700')
@@ -388,10 +385,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                             categoryName={activeData.categoryName}
                             categoryColor={categories.find(c => c.name === activeData.categoryName)?.color || '#6366f1'}
                             item={activeData.item}
-                            isDark={isDark}
-                            onClose={onClose}
-                            onDelete={onDelete}
-                            onUpdateItem={(updates) => onUpdateItem(activeData.categoryName, activeData.item.id, updates)}
                         />
                     )}
                 </div>

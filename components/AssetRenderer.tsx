@@ -8,7 +8,6 @@ import { GlbAsset } from './assets/GlbAsset';
 // Procedural Assets (kept separate)
 import { TechAsset } from './assets/TechAsset';
 import { SportAsset } from './assets/SportAsset';
-import { TravelAsset } from './assets/TravelAsset';
 import { FinanceStackAsset } from './assets/FinanceStackAsset';
 import { TreeAsset } from './assets/TreeAsset';
 import { HealthAsset } from './assets/HealthAsset';
@@ -17,12 +16,8 @@ import { CardAsset } from './assets/CardAsset';
 import { SafeAsset } from './assets/SafeAsset';
 import { GraphAsset } from './assets/GraphAsset';
 import { DebtAsset } from './assets/DebtAsset';
-import { LandAsset } from './assets/LandAsset';
 import { BriefcaseAsset } from './assets/BriefcaseAsset';
-import { DiplomaAsset } from './assets/DiplomaAsset';
 import { ShieldAsset } from './assets/ShieldAsset';
-import { CreativeAsset } from './assets/CreativeAsset';
-import { GamepadAsset } from './assets/GamepadAsset';
 import { PeopleAsset } from './assets/PeopleAsset';
 
 interface AssetRendererProps {
@@ -48,14 +43,6 @@ export const AssetRenderer: React.FC<AssetRendererProps> = ({ type, color }) => 
       return <TechAsset color={color} />;
     case 'freelance':
       return <BriefcaseAsset color={color} />;
-    case 'education':
-      return <DiplomaAsset color={color} />;
-    case 'skill':
-      return <TechAsset color={color} />;
-
-    // --- TRAVEL ---
-    case 'travel':
-      return <TravelAsset color={color} />;
 
     // --- HEALTH ---
     case 'health':
@@ -64,11 +51,9 @@ export const AssetRenderer: React.FC<AssetRendererProps> = ({ type, color }) => 
     case 'insurance':
       return <ShieldAsset color={color} />;
 
-    // --- NATURE / LAND ---
+    // --- NATURE ---
     case 'nature':
       return <TreeAsset color={color} />;
-    case 'land':
-      return <LandAsset color={color} />;
 
     // --- FINANCE ---
     case 'finance':
@@ -82,21 +67,12 @@ export const AssetRenderer: React.FC<AssetRendererProps> = ({ type, color }) => 
     case 'debt':
       return <DebtAsset color={color} />;
 
-    // --- HOBBIES ---
-    case 'hobby_creative':
-      return <CreativeAsset color={color} />;
-    case 'hobby_tech':
-      return <GamepadAsset color={color} />;
-
-    // --- SOCIAL ---
-    case 'bench':
-      return <CreativeAsset color={color} />; // Placeholder
-    case 'gift':
-      return <SafeAsset color={color} />; // Placeholder (Box)
-    case 'phone':
-      return <TechAsset color={color} />; // Placeholder
+    // --- PEOPLE ---
+    case 'people':
+      return <PeopleAsset color={color} />;
 
     default:
       return <GenericAsset color={color} />;
   }
 };
+

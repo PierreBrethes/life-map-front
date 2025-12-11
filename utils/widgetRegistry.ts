@@ -17,22 +17,10 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
     applicableTo: ['current_account', 'savings', 'finance'],
   },
   {
-    type: 'goals',
-    label: 'Objectifs',
-    icon: 'Target',
-    applicableTo: ['savings', 'investments', 'skill', 'education', 'sport'],
-  },
-  {
     type: 'maintenance',
     label: 'Entretien',
     icon: 'Wrench',
     applicableTo: ['car', 'motorbike', 'boat', 'plane', 'house', 'apartment'],
-  },
-  {
-    type: 'deadlines',
-    label: 'Échéances',
-    icon: 'Calendar',
-    applicableTo: ['debt', 'job', 'insurance', 'freelance'],
   },
   {
     type: 'property',
@@ -50,31 +38,25 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
     type: 'social-calendar',
     label: 'Calendrier Social',
     icon: 'CalendarHeart',
-    applicableTo: ['family', 'friends', 'pet', 'bench', 'gift', 'phone'],
-  },
-  {
-    type: 'birthdays',
-    label: 'Anniversaires',
-    icon: 'Gift',
-    applicableTo: ['family', 'friends', 'bench', 'gift'],
+    applicableTo: ['family', 'friends', 'pet'],
   },
   {
     type: 'contacts',
-    label: 'Derniers Contacts',
-    icon: 'Phone',
-    applicableTo: ['family', 'friends', 'phone', 'bench'],
+    label: 'Contacts & Anniversaires',
+    icon: 'Users',
+    applicableTo: ['family', 'friends'],
   },
   {
     type: 'health-body',
     label: 'Suivi Corporel',
-    icon: 'Activity', // Changed to Activity to be safe
-    applicableTo: ['medical', 'sport', 'health', 'doctor', 'hospital', 'ambulance', 'people'],
+    icon: 'Activity',
+    applicableTo: ['medical', 'sport', 'health', 'people'],
   },
   {
     type: 'health-appointments',
     label: 'Carnet de Santé',
     icon: 'Stethoscope',
-    applicableTo: ['medical', 'doctor', 'hospital', 'ambulance', 'health'],
+    applicableTo: ['medical', 'health', 'insurance'],
   },
 ];
 

@@ -11,12 +11,9 @@ const DEFAULT_WIDGET_ORDER: WidgetType[] = [
   'energy',
   'maintenance',
   'social-calendar',
-  'birthdays',
   'contacts',
   'health-body',
   'health-appointments',
-  'goals',
-  'deadlines',
 ];
 
 interface UseWidgetOrderProps {

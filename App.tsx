@@ -97,7 +97,7 @@ const App: React.FC = () => {
               value: item.value || "0",
               type: item.type || "text",
               status: item.status || "ok",
-              assetType: (item.assetType as any) || "finance",
+              assetType: item.assetType || "finance",
             });
           }
         }
@@ -199,18 +199,10 @@ const App: React.FC = () => {
       {!showOnboarding && (
         <div className="absolute inset-0 z-10 pointer-events-none">
           <UIOverlay
-            selection={selection}
             categories={categories}
-            onClose={() => setSelection(null)}
             onSelect={handleBlockClick}
             onUpdateItem={handleUpdateItem}
             onDelete={handleDeleteElement}
-            showConnections={showConnections}
-            onToggleConnections={toggleConnections}
-            settings={settings || { theme: 'light', notificationsEnabled: true }}
-            connectionMode={connectionMode}
-            onStartConnection={() => startConnection(selection || undefined)}
-            onCancelConnection={cancelConnection}
           />
         </div>
       )}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import * as Icons from 'lucide-react';
 import { Contact } from '../../types';
 
@@ -39,8 +39,35 @@ const ContactsWidget: React.FC<ContactsWidgetProps> = ({
   const cardBg = isDark ? 'bg-slate-700/30' : 'bg-gray-50';
   const inputBg = isDark ? 'bg-slate-700/50' : 'bg-gray-50';
 
+  // Calculate upcoming birthdays (next 30 days)
+  const upcomingBirthdays = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    
+    return contacts
+      .filter(c => c.birthday)
+      .map(contact => {
+        const bday = new Date(contact.birthday!);
+        // Set to current year
+        let nextBirthday = new Date(currentYear, bday.getMonth(), bday.getDate());
+        // If already passed this year, use next year
+        if (nextBirthday < now) {
+          nextBirthday = new Date(currentYear + 1, bday.getMonth(), bday.getDate());
+        }
+        const daysUntil = Math.ceil((nextBirthday.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const age = nextBirthday.getFullYear() - bday.getFullYear();
+        return { ...contact, nextBirthday, daysUntil, age };
+      })
+      .filter(c => c.daysUntil <= 30)
+      .sort((a, b) => a.daysUntil - b.daysUntil);
+  }, [contacts]);
+
   const formatDays = (days: number) => {
     return days === 0 ? "Aujourd'hui" : `${days} jours`;
+  };
+
+  const formatBirthday = (date: Date) => {
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
 
   const handleAdd = () => {
@@ -58,6 +85,7 @@ const ContactsWidget: React.FC<ContactsWidgetProps> = ({
   const handlePing = (contact: Contact) => {
     onUpdateContact(contact.id, { lastContactDate: Date.now() });
   };
+
 
   return (
     <div className={`rounded-2xl border overflow-hidden ${bgClass} ${borderClass}`}>
@@ -89,6 +117,36 @@ const ContactsWidget: React.FC<ContactsWidgetProps> = ({
       {/* Expanded Content */}
       {isExpanded && (
         <div className={`border-t ${isDark ? 'border-slate-700/50' : 'border-gray-100'}`}>
+
+          {/* Upcoming Birthdays */}
+          {upcomingBirthdays.length > 0 && (
+            <div className="p-4 space-y-2">
+              <h4 className={`text-xs font-semibold uppercase tracking-wider ${textSecondary} flex items-center gap-2`}>
+                <Icons.Gift size={12} className="text-pink-400" />
+                Anniversaires à venir
+              </h4>
+              {upcomingBirthdays.slice(0, 3).map(contact => (
+                <div key={contact.id} className={`p-2 rounded-lg ${isDark ? 'bg-pink-500/10' : 'bg-pink-50'} flex items-center justify-between`}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                      {contact.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className={`text-sm font-medium ${textPrimary}`}>{contact.name}</p>
+                      <p className="text-[10px] text-pink-400">{formatBirthday(contact.nextBirthday)} • {contact.age} ans</p>
+                    </div>
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                    contact.daysUntil <= 3 
+                      ? 'bg-pink-500 text-white animate-pulse' 
+                      : isDark ? 'bg-slate-700 text-slate-300' : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {contact.daysUntil === 0 ? "Aujourd'hui 🎂" : `J-${contact.daysUntil}`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Overdue Contacts */}
           {overdueContacts.length > 0 && (

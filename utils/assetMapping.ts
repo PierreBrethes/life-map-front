@@ -72,36 +72,6 @@ export const GLB_ASSET_CONFIG: Partial<Record<AssetType, GlbAssetConfig>> = {
     rotation: [0, 0, 0],
     previewScale: 0.5,
   },
-  'parking': {
-    glbPath: '/models/garage.glb',
-    scale: 0.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-    previewScale: 0.8,
-  },
-
-  // Health
-  'ambulance': {
-    glbPath: '/models/ambulance.glb',
-    scale: 0.025,
-    position: [0, 0.2, 0],
-    rotation: [0, 0, 0],
-    previewScale: 0.8,
-  },
-  'hospital': {
-    glbPath: '/models/hospital.glb',
-    scale: 0.004,
-    position: [0, 0.7, 0],
-    rotation: [0, -Math.PI / 2, 0],
-    previewScale: 0.5,
-  },
-  'doctor': {
-    glbPath: '/models/doctor.glb',
-    scale: 0.1,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-    previewScale: 1.0,
-  },
 
   // Social
   'pet': {
@@ -158,8 +128,6 @@ export const ALL_ASSETS: AssetOption[] = [
   // Immobilier
   { label: 'Maison', value: 'house' },
   { label: 'Appartement (Immeuble)', value: 'apartment' },
-  { label: 'Terrain / Ferme', value: 'land' },
-  { label: 'Garage / Parking', value: 'parking' },
 
   // Garage
   { label: 'Voiture', value: 'car' },
@@ -170,29 +138,16 @@ export const ALL_ASSETS: AssetOption[] = [
   // Carrière
   { label: 'Emploi (Bureau)', value: 'job' },
   { label: 'Freelance (Mallette)', value: 'freelance' },
-  { label: 'Formation (Diplôme)', value: 'education' },
-  { label: 'Compétence (Outil)', value: 'skill' },
 
   // Santé
   { label: 'Médical (Croix)', value: 'medical' },
   { label: 'Sport (Haltère)', value: 'sport' },
   { label: 'Assurance (Bouclier)', value: 'insurance' },
-  { label: 'Ambulance', value: 'ambulance' },
-  { label: 'Hôpital', value: 'hospital' },
-  { label: 'Docteur', value: 'doctor' },
-
-  // Loisirs
-  { label: 'Voyage (Globe)', value: 'travel' },
-  { label: 'Art / Musique', value: 'hobby_creative' },
-  { label: 'Gaming / Tech', value: 'hobby_tech' },
 
   // Social
   { label: 'Famille (Maison)', value: 'family' },
   { label: 'Amis (Groupe)', value: 'friends' },
   { label: 'Animal (Patte)', value: 'pet' },
-  { label: 'Banc / Café', value: 'bench' },
-  { label: 'Cadeau / Gâteau', value: 'gift' },
-  { label: 'Téléphone / Lettre', value: 'phone' },
 
   // Legacy (pour compatibilité)
   { label: 'Finance (Pile)', value: 'finance' },
@@ -202,14 +157,12 @@ export const ALL_ASSETS: AssetOption[] = [
 
 export const ASSET_MAPPING: Record<string, AssetType[]> = {
   'Finances': ['current_account', 'savings', 'investments', 'debt', 'finance', 'default'],
-  'Immobilier': ['house', 'apartment', 'land', 'parking', 'default'],
+  'Immobilier': ['house', 'apartment', 'default'],
   'Garage': ['car', 'motorbike', 'boat', 'plane', 'default'],
-  'Travail': ['job', 'freelance', 'education', 'skill', 'tech', 'default'],
-  'Santé': ['medical', 'sport', 'insurance', 'ambulance', 'hospital', 'doctor', 'health', 'default'],
-  'Loisirs': ['travel', 'hobby_creative', 'hobby_tech', 'sport', 'nature', 'default'],
+  'Travail': ['job', 'freelance', 'tech', 'default'],
+  'Santé': ['medical', 'sport', 'insurance', 'health', 'default'],
   'Famille': ['family', 'friends', 'pet', 'people', 'default'],
-  'Social': ['family', 'friends', 'pet', 'bench', 'gift', 'phone', 'people', 'default'],
-  'Projets': ['travel', 'freelance', 'hobby_creative', 'default'],
+  'Social': ['family', 'friends', 'pet', 'people', 'default'],
 };
 
 // Asset metadata: top offset for alert signals and hover labels
@@ -226,8 +179,6 @@ export const ASSET_METADATA: Record<AssetType, AssetMetadata> = {
   // Immobilier
   'house': { topOffset: 1.4 },
   'apartment': { topOffset: 2.5 }, // Immeuble haut
-  'land': { topOffset: 0.6 },
-  'parking': { topOffset: 0.8 },
   'home': { topOffset: 1.4 }, // Legacy
 
   // Garage
@@ -239,33 +190,22 @@ export const ASSET_METADATA: Record<AssetType, AssetMetadata> = {
   // Carrière
   'job': { topOffset: 2.0 }, // Tour
   'freelance': { topOffset: 0.7 },
-  'education': { topOffset: 0.6 },
-  'skill': { topOffset: 0.8 },
 
   // Santé
   'medical': { topOffset: 0.8 },
   'sport': { topOffset: 0.6 },
   'insurance': { topOffset: 0.9 },
-  'ambulance': { topOffset: 0.6 },
-  'hospital': { topOffset: 1.0 },
-  'doctor': { topOffset: 0.5 },
   'health': { topOffset: 0.8 }, // Legacy
 
-  // Loisirs
-  'travel': { topOffset: 1.0 },
-  'hobby_creative': { topOffset: 0.9 },
-  'hobby_tech': { topOffset: 1.1 },
-  'tech': { topOffset: 1.1 }, // Legacy
-  'nature': { topOffset: 1.4 }, // Legacy
+  // Legacy
+  'tech': { topOffset: 1.1 },
+  'nature': { topOffset: 1.4 },
 
   // Social
   'family': { topOffset: 1.2 },
   'friends': { topOffset: 1.0 },
   'pet': { topOffset: 0.6 },
-  'bench': { topOffset: 0.6 },
-  'gift': { topOffset: 0.8 },
-  'phone': { topOffset: 0.7 },
-  'people': { topOffset: 0.9 }, // Legacy
+  'people': { topOffset: 0.9 },
 };
 
 export const getAssetMetadata = (assetType: AssetType): AssetMetadata => {
@@ -297,3 +237,4 @@ export const getAssetsForCategory = (categoryName: string): AssetOption[] => {
   // Default: Return all assets if no specific mapping found
   return ALL_ASSETS;
 };
+
