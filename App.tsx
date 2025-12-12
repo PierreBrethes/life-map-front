@@ -9,7 +9,7 @@ import { useLifeMapMutations } from './hooks/useLifeMapMutations';
 import { useCategories, useDependencies, useSettings, useSyncRecurring } from './hooks/useLifeMapData';
 import api from './api/axios';
 import { ItemDetailSidebar } from './components/sidebar';
-import { SelectionState } from './types'; // Ensure correct import if not default
+import { SelectionState } from './types';
 
 const App: React.FC = () => {
   // --- GLOBAL STORE ---
@@ -22,7 +22,7 @@ const App: React.FC = () => {
 
   const [activeSidebarData, setActiveSidebarData] = React.useState<typeof selection>(null);
 
-  // Keep active data for exit animation
+  // Preserve sidebar data during close animation (prevents content flash)
   useEffect(() => {
     if (selection) {
       setActiveSidebarData(selection);
@@ -49,8 +49,7 @@ const App: React.FC = () => {
           }
         },
         onError: (err) => {
-          // Silent fail - backend may not have the endpoint yet
-          console.debug('[LifeMap] Recurring sync not available:', err);
+          console.debug('[LifeMap] Recurring sync skipped:', err);
         },
       });
     }
@@ -70,7 +69,7 @@ const App: React.FC = () => {
     }
   }, [settings]);
 
-  // Keep selection in sync with data updates
+  // Auto-update selection when backend data changes (e.g., after mutation)
   useEffect(() => {
     if (selection) {
       const cat = categories.find(c => c.name === selection.categoryName);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SelectionState, Category, ItemType, ItemStatus, LifeItem, UserSettings } from '../types';
-import * as Icons from 'lucide-react'; // Dynamic Import all icons
+import * as Icons from 'lucide-react';
 import CreationModal, { ModalMode } from './CreationModal';
 import NotificationWidget from './NotificationWidget';
 
@@ -21,21 +21,18 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     onUpdateItem,
     onDelete,
 }) => {
-    // Global Store
     const {
         selection, setSelection,
         connectionMode, startConnection, cancelConnection,
         showConnections, toggleConnections
     } = useStore();
 
-    // Data Hooks
     const { data: settingsData } = useSettings();
     const settings = settingsData || { theme: 'light', notificationsEnabled: true } as UserSettings;
 
     const [modalMode, setModalMode] = useState<ModalMode>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    // Search State
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<{ categoryName: string, item: LifeItem }[]>([]);
 
@@ -43,7 +40,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
     const isDark = settings.theme === 'dark';
 
-    // Styles based on theme
     const glassPanelClass = isDark
         ? "bg-slate-900/80 backdrop-blur-xl border-slate-700/50 text-white"
         : "bg-white/80 backdrop-blur-xl border-white/50 text-gray-800";
@@ -59,7 +55,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     const textPrimary = isDark ? "text-white" : "text-gray-900";
     const textSecondary = isDark ? "text-slate-400" : "text-gray-500";
 
-    // Search Logic
     useEffect(() => {
         if (!searchQuery.trim()) {
             setSearchResults([]);
@@ -78,7 +73,6 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
         setSearchResults(results);
     }, [searchQuery, categories]);
 
-    // Dynamic Icon Renderer
     const renderIcon = (iconName: string | undefined, fallback: any) => {
         if (!iconName) return fallback;
         const IconComponent = (Icons as any)[iconName];

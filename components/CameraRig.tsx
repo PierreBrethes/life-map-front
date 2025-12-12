@@ -12,19 +12,13 @@ const CameraRig: React.FC<CameraRigProps> = ({ targetPosition }) => {
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const cameraRef = useRef<THREE.OrthographicCamera>(null);
   
-  // State to manage the transition back to overview
   const [isResetting, setIsResetting] = useState(false);
   const prevTargetRef = useRef(targetPosition);
 
+  // Track target changes to trigger smooth transitions between modes
   useEffect(() => {
-      // Detect deselect (Value -> Null)
-      if (prevTargetRef.current && !targetPosition) {
-          setIsResetting(true);
-      }
-      // Detect select (Null -> Value) - Stop resetting immediately
-      if (targetPosition) {
-          setIsResetting(false);
-      }
+      if (prevTargetRef.current && !targetPosition) setIsResetting(true);
+      if (targetPosition) setIsResetting(false);
       prevTargetRef.current = targetPosition;
   }, [targetPosition]);
 
@@ -32,21 +26,20 @@ const CameraRig: React.FC<CameraRigProps> = ({ targetPosition }) => {
     const damp = 4 * delta;
 
     if (controlsRef.current && cameraRef.current) {
+      // FOCUS MODE: Zoom in and center on selected item
       if (targetPosition) {
-          // --- FOCUS MODE ---
           controlsRef.current.target.lerp(
             new THREE.Vector3(targetPosition[0], 0, targetPosition[2]), 
             damp
           );
           cameraRef.current.zoom = THREE.MathUtils.lerp(cameraRef.current.zoom, 90, damp);
           cameraRef.current.updateProjectionMatrix();
+      // OVERVIEW TRANSITION: Return to default view
       } else if (isResetting) {
-          // --- TRANSITION TO OVERVIEW ---
           controlsRef.current.target.lerp(new THREE.Vector3(0, 0, 0), damp);
           cameraRef.current.zoom = THREE.MathUtils.lerp(cameraRef.current.zoom, 50, damp);
           cameraRef.current.updateProjectionMatrix();
 
-          // Check if transition is complete
           const dist = controlsRef.current.target.distanceTo(new THREE.Vector3(0,0,0));
           const zoomDiff = Math.abs(cameraRef.current.zoom - 50);
           
@@ -54,9 +47,7 @@ const CameraRig: React.FC<CameraRigProps> = ({ targetPosition }) => {
               setIsResetting(false);
           }
       }
-      // --- IDLE OVERVIEW ---
-      // If !targetPosition and !isResetting, we do nothing.
-      // This allows the user to pan and zoom freely in overview mode.
+      // IDLE: No target, no transition - user can freely pan/zoom
       
       controlsRef.current.update();
     }

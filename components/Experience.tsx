@@ -21,7 +21,7 @@ interface ExperienceProps {
   onDeleteDependency: (id: string) => void;
 }
 
-// Ocean Component
+/** Decorative ocean floor plane */
 const Ocean = ({ isDarkMode }: { isDarkMode: boolean }) => (
   <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.2, 0]}>
     <planeGeometry args={[100, 100, 20, 20]} />
@@ -61,8 +61,6 @@ const Experience: React.FC<ExperienceProps> = ({
     const pos = getItemWorldPosition(category.id, selection.item.id, data);
     if (!pos) return null;
 
-    // Return raw position without sidebar offset for now
-    // This should center the camera exactly on the item
     return pos;
   }, [selection, data]);
 
@@ -77,7 +75,7 @@ const Experience: React.FC<ExperienceProps> = ({
       {/* Cinematic Camera Controller */}
       <CameraRig targetPosition={cameraTarget} />
 
-      {/* --- LIGHTING & ATMOSPHERE --- */}
+      {/* Lighting */}
       <color attach="background" args={[isDarkMode ? '#020617' : '#f0f9ff']} />
       <fog attach="fog" args={[isDarkMode ? '#020617' : '#f0f9ff', 20, 90]} />
 
@@ -93,13 +91,10 @@ const Experience: React.FC<ExperienceProps> = ({
 
       <directionalLight position={[-5, 5, -5]} intensity={isDarkMode ? 0.8 : 0.5} color={isDarkMode ? "#4f46e5" : "#e0e7ff"} />
 
-      {/* Additional soft fill light for dark mode */}
       {isDarkMode && <directionalLight position={[0, 10, -10]} intensity={0.3} color="#1e293b" />}
 
-      {/* Ocean Floor */}
       <Ocean isDarkMode={isDarkMode} />
 
-      {/* --- CONTACT SHADOWS --- */}
       <ContactShadows
         position={[0, -0.05, 0]}
         opacity={isDarkMode ? 0.3 : 0.5}
@@ -110,7 +105,7 @@ const Experience: React.FC<ExperienceProps> = ({
         color="#000000"
       />
 
-      {/* Islands Generation */}
+      {/* Islands */}
       <group position={[0, 0, 0]}>
         {data.map((category, index) => {
           const position = getIslandPosition(index, data.length);
