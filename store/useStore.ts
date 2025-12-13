@@ -37,6 +37,18 @@ interface AppState {
   // UI Toggles
   showConnections: boolean;
   toggleConnections: () => void;
+
+  // Island Context Menu (right-click)
+  islandContextMenu: { x: number; y: number; categoryId: string } | null;
+  setIslandContextMenu: (menu: { x: number; y: number; categoryId: string } | null) => void;
+
+  // Island Management Panel
+  islandManagementOpen: boolean;
+  setIslandManagementOpen: (open: boolean) => void;
+
+  // Island Deletion
+  pendingDeleteIsland: { id: string; name: string; itemCount: number } | null;
+  setPendingDeleteIsland: (island: { id: string; name: string; itemCount: number } | null) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -100,4 +112,16 @@ export const useStore = create<AppState>((set) => ({
   // UI Toggles
   showConnections: true,
   toggleConnections: () => set((state) => ({ showConnections: !state.showConnections })),
+
+  // Island Context Menu
+  islandContextMenu: null,
+  setIslandContextMenu: (menu) => set({ islandContextMenu: menu }),
+
+  // Island Management Panel
+  islandManagementOpen: false,
+  setIslandManagementOpen: (open) => set({ islandManagementOpen: open }),
+
+  // Island Deletion
+  pendingDeleteIsland: null,
+  setPendingDeleteIsland: (island) => set({ pendingDeleteIsland: island }),
 }));

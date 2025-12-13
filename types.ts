@@ -139,12 +139,17 @@ export interface SelectionState {
   item: LifeItem;
 }
 
+export type LinkType = 'insurance' | 'subscription' | 'payment' | 'maintenance' | 'ownership' | 'other';
+
 export interface Dependency {
   id: string;
   fromCategoryId: string;
   fromItemId: string;
   toCategoryId: string;
   toItemId: string;
+  description?: string;           // "Assurance auto", "Prélèvement mensuel", etc.
+  linkType?: LinkType;            // Type of connection
+  linkedItemId?: string;          // Reference to an existing item (e.g., insurance subscription)
 }
 
 export interface UserSettings {

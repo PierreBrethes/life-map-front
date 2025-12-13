@@ -1,18 +1,24 @@
 import api from '../axios';
-import { Dependency } from '../../types';
+import { Dependency, LinkType } from '../../types';
 
 interface CreateDependencyPayload {
   fromCategoryId: string;
   fromItemId: string;
   toCategoryId: string;
   toItemId: string;
+  description?: string;
+  linkType?: LinkType;
+  linkedItemId?: string;
 }
 
 interface UpdateDependencyPayload {
-  fromCategory?: string;
-  fromItem?: string;
-  toCategory?: string;
-  toItem?: string;
+  fromCategoryId?: string;
+  fromItemId?: string;
+  toCategoryId?: string;
+  toItemId?: string;
+  description?: string;
+  linkType?: LinkType;
+  linkedItemId?: string;
 }
 
 export const dependenciesApi = {

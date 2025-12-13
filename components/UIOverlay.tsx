@@ -3,6 +3,9 @@ import { SelectionState, Category, ItemType, ItemStatus, LifeItem, UserSettings 
 import * as Icons from 'lucide-react';
 import CreationModal, { ModalMode } from './CreationModal';
 import NotificationWidget from './NotificationWidget';
+import IslandContextMenu from './IslandContextMenu';
+import DeleteIslandModal from './DeleteIslandModal';
+import IslandManagementPanel from './IslandManagementPanel';
 
 import { useLifeMapMutations } from '../hooks/useLifeMapMutations';
 import { useStore } from '../store/useStore';
@@ -24,7 +27,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     const {
         selection, setSelection,
         connectionMode, startConnection, cancelConnection,
-        showConnections, toggleConnections
+        showConnections, toggleConnections,
+        islandManagementOpen, setIslandManagementOpen
     } = useStore();
 
     const { data: settingsData } = useSettings();
@@ -98,6 +102,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
                 onClose={() => setModalMode(null)}
                 isDarkMode={isDark}
             />
+
+            {/* Island Management Components */}
+            <IslandContextMenu />
+            <DeleteIslandModal />
+            <IslandManagementPanel />
 
             {/* CONNECTION MODE BANNER */}
             {connectionMode !== 'idle' && (
@@ -283,6 +292,17 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
                     {/* Group 2: Creation */}
                     <div className={`flex items-center gap-2 border p-2 rounded-full shadow-xl ring-1 ring-gray-900/5 ${glassPanelClass}`}>
+                        {/* MANAGE ISLANDS BUTTON */}
+                        <button
+                            onClick={() => setIslandManagementOpen(true)}
+                            className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'}`}
+                            title="Gérer mes îles"
+                        >
+                            <Icons.Settings2 size={18} />
+                        </button>
+
+                        <div className={`w-px h-6 mx-1 ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`}></div>
+
                         {/* ADD CATEGORY BUTTON */}
                         <button
                             onClick={() => setModalMode('category')}

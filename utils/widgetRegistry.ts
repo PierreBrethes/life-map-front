@@ -5,6 +5,12 @@ import { AssetType, WidgetConfig, WidgetType } from '../types';
  */
 export const WIDGET_REGISTRY: WidgetConfig[] = [
   {
+    type: 'alerts',
+    label: 'Alertes',
+    icon: 'Bell',
+    applicableTo: ['default'],
+  },
+  {
     type: 'history',
     label: 'Historique',
     icon: 'LineChart',

@@ -32,7 +32,7 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = ({
 }) => {
   // Global Store
   const { setSelection } = useStore();
-  
+
   // Data Hooks
   const { data: settings } = useSettings();
   const { updateItem, deleteItem } = useLifeMapMutations();
@@ -114,6 +114,7 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = ({
   const showContactsWidget = isWidgetAvailable('contacts', item.assetType);
   const showBodyTrackingWidget = isWidgetAvailable('health-body', item.assetType);
   const showHealthAppointmentsWidget = isWidgetAvailable('health-appointments', item.assetType);
+  const showConnectionsWidget = isWidgetAvailable('connections', item.assetType);
 
   // Compute available widgets for drag/drop zone
   const availableWidgets = useMemo(() => {
@@ -128,11 +129,13 @@ const ItemDetailSidebar: React.FC<ItemDetailSidebarProps> = ({
     if (showContactsWidget) widgets.push('contacts');
     if (showBodyTrackingWidget) widgets.push('health-body');
     if (showHealthAppointmentsWidget) widgets.push('health-appointments');
+    if (showConnectionsWidget) widgets.push('connections');
     return widgets;
   }, [
     showHistoryWidget, showRecurringFlowsWidget, showPropertyWidget,
     showEnergyWidget, showMaintenanceWidget, showSocialCalendarWidget,
-    showContactsWidget, showBodyTrackingWidget, showHealthAppointmentsWidget
+    showContactsWidget, showBodyTrackingWidget, showHealthAppointmentsWidget,
+    showConnectionsWidget
   ]);
 
   const textSecondary = isDark ? 'text-slate-400' : 'text-gray-500';

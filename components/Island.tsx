@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import Block from './Block';
 import { Category, SelectionState, LifeItem } from '../types';
 import { getItemLocalPosition, ITEM_SPACING } from '../utils/layout';
+import { useStore } from '../store/useStore';
 
 interface IslandProps {
   category: Category;
@@ -14,6 +15,7 @@ interface IslandProps {
 }
 
 const Island: React.FC<IslandProps> = ({ category, position, selection, onSelect }) => {
+  const { setIslandContextMenu } = useStore();
   const MIN_SIZE = 4.5; // Minimum width/height for the island to look good with label
   const PADDING = 2.8; // Space around the grid of items
 
@@ -65,7 +67,20 @@ const Island: React.FC<IslandProps> = ({ category, position, selection, onSelect
   return (
     <group position={position}>
       {/* Pure 2D Plane Surface - Dynamically Sized */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        receiveShadow
+        onContextMenu={(e) => {
+          e.stopPropagation();
+          // Get the client coordinates from the native event
+          const nativeEvent = e.nativeEvent as MouseEvent;
+          setIslandContextMenu({
+            x: nativeEvent.clientX,
+            y: nativeEvent.clientY,
+            categoryId: category.id
+          });
+        }}
+      >
         <shapeGeometry args={[shape]} />
         <meshStandardMaterial
           color={'#cbd5e1'} // Slate-300 for better visibility
