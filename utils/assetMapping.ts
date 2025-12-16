@@ -18,91 +18,11 @@ export interface GlbAssetConfig {
   previewScale: number; // Multiplier for carousel preview
 }
 
+// Import configuration from external JSON
+import assetsConfig from './assets.json';
+
 // All GLB assets with their rendering configuration
-export const GLB_ASSET_CONFIG: Partial<Record<AssetType, GlbAssetConfig>> = {
-  // Vehicles
-  'car': {
-    glbPath: '/models/car.glb',
-    scale: 0.02,
-    position: [0, 0.3, 0],
-    rotation: [0, 0, 0],
-    previewScale: 0.9,
-  },
-  'plane': {
-    glbPath: '/models/plane.glb',
-    scale: 0.75,
-    position: [0, 0.6, 0],
-    rotation: [0, Math.PI / 2, 0],
-    previewScale: 0.7,
-  },
-  'motorbike': {
-    glbPath: '/models/motorcycle.glb',
-    scale: 0.1,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-    previewScale: 1.0,
-  },
-  'boat': {
-    glbPath: '/models/ship.glb',
-    scale: 0.7,
-    position: [0, 0.7, 0],
-    rotation: [0, 0, 0],
-    previewScale: 1.0,
-  },
-
-  // Real Estate
-  'house': {
-    glbPath: '/models/house.glb',
-    scale: 1.2,
-    position: [0, 0.8, 0],
-    rotation: [0, 0, 0],
-    previewScale: 0.7,
-  },
-  'home': { // Alias
-    glbPath: '/models/house.glb',
-    scale: 1.2,
-    position: [0, 0.8, 0],
-    rotation: [0, 0, 0],
-    previewScale: 0.7,
-  },
-  'apartment': {
-    glbPath: '/models/building.glb',
-    scale: 0.85,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-    previewScale: 0.5,
-  },
-
-  // Social
-  'pet': {
-    glbPath: '/models/dog.glb',
-    scale: 0.5,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-    previewScale: 2.0,
-  },
-  'family': {
-    glbPath: '/models/character-explorer.glb',
-    scale: 0.6,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-    previewScale: 1.0,
-  },
-  'friends': {
-    glbPath: '/models/character-explorer.glb',
-    scale: 0.6,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-    previewScale: 1.0,
-  },
-  'people': {
-    glbPath: '/models/character-explorer.glb',
-    scale: 0.6,
-    position: [0, 0, 0],
-    rotation: [0, 0, 0],
-    previewScale: 1.0,
-  },
-};
+export const GLB_ASSET_CONFIG: Partial<Record<AssetType, GlbAssetConfig>> = assetsConfig as unknown as Partial<Record<AssetType, GlbAssetConfig>>;
 
 // Helper to check if an asset type uses GLB
 export const isGlbAsset = (assetType: AssetType): boolean => {

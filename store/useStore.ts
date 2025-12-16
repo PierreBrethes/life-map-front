@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { LifeItem, AssetType, SelectionState } from '../types';
+import { GlbAssetConfig } from '../utils/assetMapping';
 
 interface ModalState {
   isOpen: boolean;
@@ -49,6 +50,10 @@ interface AppState {
   // Island Deletion
   pendingDeleteIsland: { id: string; name: string; itemCount: number } | null;
   setPendingDeleteIsland: (island: { id: string; name: string; itemCount: number } | null) => void;
+
+  // Dynamic Asset Configs
+  assetConfigs: Record<string, GlbAssetConfig>;
+  setAssetConfigs: (configs: Record<string, GlbAssetConfig>) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -124,4 +129,8 @@ export const useStore = create<AppState>((set) => ({
   // Island Deletion
   pendingDeleteIsland: null,
   setPendingDeleteIsland: (island) => set({ pendingDeleteIsland: island }),
+
+  // Dynamic Asset Configs
+  assetConfigs: {} as Record<string, GlbAssetConfig>,
+  setAssetConfigs: (configs) => set({ assetConfigs: configs }),
 }));

@@ -3,6 +3,16 @@ import { categoriesApi } from '../api/endpoints/categories';
 import { dependenciesApi } from '../api/endpoints/dependencies';
 import { settingsApi } from '../api/endpoints/settings';
 import { recurringApi } from '../api/endpoints/recurring';
+import { assetsApi } from '../api/endpoints/assets';
+
+export const useAssetConfigs = () => {
+  return useQuery({
+    queryKey: ['assetConfigs'],
+    queryFn: assetsApi.getConfig,
+    staleTime: Infinity, // Configs rarely change unless updated via Studio
+  });
+};
+
 
 export const useCategories = () => {
   return useQuery({

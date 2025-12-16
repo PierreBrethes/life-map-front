@@ -10,12 +10,18 @@ interface GlbAssetProps {
   color?: string;
 }
 
+import { useStore } from '../../store/useStore';
+
 /**
  * Unified GLB Asset component that renders any GLB-based 3D model
- * using the centralized configuration from assetMapping.ts
+ * using the dynamic configuration from Store (DB) or fallback to static assetMapping.ts
  */
 export const GlbAsset: React.FC<GlbAssetProps> = ({ assetType, color }) => {
-  const config = getGlbConfig(assetType);
+  const { assetConfigs } = useStore();
+  const staticConfig = getGlbConfig(assetType);
+
+  // Prefer dynamic config from DB, fallback to static JSON
+  const config = assetConfigs[assetType] || staticConfig;
 
   // If no GLB config exists for this asset type, return null
   if (!config) {
