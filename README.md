@@ -15,54 +15,11 @@
 
 ## ✨ Concept
 
-LifeMap transforme vos **catégories de vie** (Finance, Santé, Social, etc.) en **îles flottantes** dans un monde 3D isométrique à la *SimCity 2000*.
+LifeMap transforme vos **catégories de vie** (Finance, Santé, Social, etc.) en **îles flottantes** dans un monde 3D isométrique.
 
-Chaque **bloc** sur une île représente un élément de votre vie : un compte bancaire, un objectif fitness, une relation importante. Suivez leur statut, créez des liens entre eux, et gardez une vue d'ensemble sur ce qui compte vraiment.
+Chaque **bloc** sur une île représente un élément de votre vie : un compte bancaire, une relation importante, un bien immobilier. Suivez leur statut, créez des liens entre eux, et gardez une vue d'ensemble sur ce qui compte vraiment.
 
 > 🎮 **Gamifiez votre vie** - Pas de tableaux Excel. Pas de listes infinies. Juste des îles, des blocs, et vous.
-
----
-
-## 🖼️ Aperçu
-
-| Vue d'ensemble | Détail d'un bloc |
-|---|---|
-| *Vos îles disposées dans un océan 3D* | *Sidebar avec widgets contextuels* |
-
----
-
-## 🚀 Installation
-
-### Prérequis
-
-- **Node.js** 18+ 
-- **npm** ou **yarn**
-- **Backend LifeMap API** (optionnel, pour la persistance)
-
-### Lancer le projet
-
-```bash
-# Cloner le repo
-git clone https://github.com/votre-username/life-map-front.git
-cd life-map-front
-
-# Installer les dépendances
-npm install
-
-# Lancer en mode développement
-npm run dev
-```
-
-L'app sera disponible sur `http://localhost:5173`
-
-### Variables d'environnement
-
-Créez un fichier `.env.local` si besoin :
-
-```env
-# Optionnel : Clé API Gemini pour les fonctionnalités IA
-VITE_GEMINI_API_KEY=your_key_here
-```
 
 ---
 
@@ -71,12 +28,13 @@ VITE_GEMINI_API_KEY=your_key_here
 | Technologie | Rôle |
 |---|---|
 | **React 19** | UI moderne avec les dernières features |
-| **@react-three/fiber** | Rendu 3D déclaratif (Three.js) |
+| **@react-three/fiber (R3F)** | Rendu 3D déclaratif (Three.js) |
 | **@react-three/drei** | Helpers 3D (caméra, ombres, contrôles) |
-| **Zustand** | State management léger |
-| **React Query** | Fetching & cache de données |
+| **Zustand** | Gestion d'état global du frontend |
+| **React Query** | Fetching & cache de données API |
+| **Recharts** | Visualisation de données (Graphiques widgets) |
 | **Tailwind CSS** | Styling utilitaire |
-| **TypeScript** | Typage strict |
+| **Axios** | Client HTTP |
 
 ---
 
@@ -84,51 +42,58 @@ VITE_GEMINI_API_KEY=your_key_here
 
 ```
 src/
+├── api/                # Services API (Axios calls)
 ├── components/
 │   ├── Experience.tsx      # Scene 3D principale
-│   ├── Island.tsx          # Île = catégorie
-│   ├── Block.tsx           # Bloc = item
+│   ├── Island.tsx          # Île = catégorie (Finance, Health, etc.)
+│   ├── Block.tsx           # Bloc = item interactif
 │   ├── CameraRig.tsx       # Contrôle caméra isométrique
-│   ├── Connections.tsx     # Liens entre blocs
-│   ├── sidebar/            # Sidebar de détail
-│   ├── widgets/            # Widgets contextuels
-│   └── assets/             # Assets 3D procéduraux
-├── hooks/                  # Custom hooks (data, mutations)
-├── store/                  # Zustand store
-├── utils/                  # Helpers (layout, registry)
-└── types.ts                # Types TypeScript
+│   ├── sidebar/            # Sidebar de détail (Overlay 2D)
+│   ├── widgets/            # Widgets fonctionnels (History, Goals, etc.)
+│   └── assets/             # Assets 3D procéduraux (Glb/Procedural)
+├── hooks/              # Custom hooks (useItems, useCategories)
+├── store/              # Zustand store (Sélection, UI state)
+├── utils/              # Helpers (layout, registry)
+└── types.ts            # Types TypeScript partagés avec le back
 ```
 
 ---
 
-## 🎨 Design Philosophy
+## 🚀 Installation & Démarrage
 
-- **Low-poly isométrique** : Esthétique minimaliste inspirée des jeux de gestion
-- **Glassmorphism** : UI overlay avec blur et transparence
-- **Dark/Light mode** : Thème adaptatif
-- **Pas de modèles 3D externes** : Tout est généré procéduralement avec des primitives Three.js
+### Prérequis
+*   Node.js 18+
+*   Le backend LifeMap qui tourne (voir README backend)
+
+### Commandes
+
+```bash
+# 1. Installer les dépendances
+npm install
+
+# 2. Lancer le serveur de développement
+npm run dev
+# L'app sera disponible sur http://localhost:5173
+```
 
 ---
 
-## 🔧 Scripts disponibles
+## 🔧 Features Clés
 
-| Commande | Description |
-|---|---|
-| `npm run dev` | Serveur de développement (Vite) |
-| `npm run build` | Build de production |
-| `npm run preview` | Prévisualiser le build |
-
----
-
-## 📝 License
-
-MIT © LifeMap
+*   **Rendu 3D Procédural** : Génération des maisons, véhicules et objets sans charger de lourds modèles externes.
+*   **Widgets Interactifs** :
+    *   **Finance** : Historique, Abonnements.
+    *   **Santé** : Suivi poids (Graphique Recharts), Carnet de santé.
+    *   **Social** : Contacts et Fréquence.
+    *   **Garage** : Maintenance véhicules.
+*   **Système d'Alertes** : Feedback visuel sur les blocs (Couleur/Pulsation) en cas de statut `WARNING` ou `CRITICAL`.
+*   **Mode Sombre/Clair** : Adaptation de l'interface et de l'ambiance 3D.
 
 ---
 
 <div align="center">
 
-**Made with ❤️ and Three.js**
+**Made with ❤️ and R3F**
 
 *"Your life, visualized."*
 
