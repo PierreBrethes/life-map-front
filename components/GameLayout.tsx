@@ -1,4 +1,3 @@
-
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import Experience from './Experience';
 import UIOverlay from './UIOverlay';
@@ -8,14 +7,38 @@ import { useLifeMapMutations } from '../hooks/useLifeMapMutations';
 import { useCategories, useDependencies, useSettings, useSyncRecurring, useAssetConfigs } from '../hooks/useLifeMapData';
 import api from '../api/axios';
 import { ItemDetailSidebar } from './sidebar';
+import { useAgentStream } from '../hooks/useAgentStream';
 
 const GameLayout: React.FC = () => {
   // --- ONBOARDING STATE ---
   const [isOnboarding, setIsOnboarding] = useState(true);
 
+  // --- AGENT STREAM ---
+  const { messages, isStreaming, isOnboardingComplete, robotAnimation, sendMessage } = useAgentStream();
+
   const handleOnboardingComplete = () => {
     setIsOnboarding(false);
   };
+
+  // Auto-complete onboarding if agent signals it
+  useEffect(() => {
+    if (isOnboardingComplete && isOnboarding) {
+      const timeout = setTimeout(() => setIsOnboarding(false), 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isOnboardingComplete, isOnboarding]);
+
+  // Trigger Onboarding Conversation
+  const hasStartedRef = useRef(false);
+  useEffect(() => {
+    if (isOnboarding && !hasStartedRef.current && !messages) {
+      hasStartedRef.current = true;
+      // Send hidden system prompt to start the flow
+      sendMessage("SYSTEM_TRIGGER: Démarrer l'onboarding pour un nouvel utilisateur. Présente-toi et pose la première question.");
+    }
+  }, [isOnboarding, messages, sendMessage]);
+
+
   // --- GLOBAL STORE ---
   const {
     selection, setSelection,
@@ -182,18 +205,20 @@ const GameLayout: React.FC = () => {
             onDeleteDependency={handleDeleteDependency}
             isOnboarding={isOnboarding && categories.length === 0}
             onOnboardingComplete={handleOnboardingComplete}
+            // Agent Props
+            agentMessages={messages}
+            agentRobotAnimation={robotAnimation || undefined}
+            isAgentThinking={isStreaming}
+            onAgentMessage={(msg) => {/* Parent handles input */ }}
           />
         </Suspense>
       </div>
 
-      {/* 2D UI Layer (HUD) - hidden during onboarding with fade-in animation */}
+      {/* 2D UI Layer (HUD) - managed by UIOverlay directly now */}
       <div
         className={`
           absolute inset-0 z-10 pointer-events-none
           transition-all duration-700 ease-out
-          ${(isOnboarding && categories.length === 0)
-            ? 'opacity-0 translate-y-4'
-            : 'opacity-100 translate-y-0'}
         `}
       >
         <UIOverlay
@@ -201,6 +226,10 @@ const GameLayout: React.FC = () => {
           onSelect={handleBlockClick}
           onUpdateItem={handleUpdateItem}
           onDelete={handleDeleteElement}
+          // Agent Props
+          isAgentStreaming={isStreaming}
+          isOnboarding={isOnboarding && categories.length === 0}
+          onAgentMessage={sendMessage}
         />
       </div>
 

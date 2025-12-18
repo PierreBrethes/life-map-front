@@ -100,7 +100,7 @@ export type AssetType =
   // Legacy / Fallbacks
   | 'finance' | 'health' | 'home' | 'nature' | 'tech' | 'people'
   // Special
-  | 'robot';
+  | 'robot' | 'wrench' | 'screws';
 
 export interface LifeItem {
   id: string;

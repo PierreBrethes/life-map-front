@@ -70,6 +70,10 @@ export const ALL_ASSETS: AssetOption[] = [
   { label: 'Animal (Patte)', value: 'pet' },
   { label: 'Robot (Robot)', value: 'robot' },
 
+  // Items / Tools
+  { label: 'Clé à molette', value: 'wrench' },
+  { label: 'Vis', value: 'screws' },
+
   // Legacy (pour compatibilité)
   { label: 'Finance (Pile)', value: 'finance' },
   { label: 'Tech (Écran)', value: 'tech' },
@@ -128,6 +132,8 @@ export const ASSET_METADATA: Record<AssetType, AssetMetadata> = {
   'pet': { topOffset: 0.6 },
   'people': { topOffset: 0.9 },
   'robot': { topOffset: 0.8 },
+  'wrench': { topOffset: 0.5 },
+  'screws': { topOffset: 0.5 },
 };
 
 export const getAssetMetadata = (assetType: AssetType): AssetMetadata => {

@@ -10,8 +10,9 @@ interface CameraRigProps {
 }
 
 // Robot position - centered and looking more at face level
-const ROBOT_CAMERA_TARGET = new THREE.Vector3(0.5, 1.5, 0);
-const ROBOT_ZOOM = 80;
+// Adjusted target Y (2.0) to frame the robot lower in view (making space for bubble)
+const ROBOT_CAMERA_TARGET = new THREE.Vector3(0.5, 2.5, 0);
+const ROBOT_ZOOM = 65; // Zoomed out slightly (was 80)
 
 const CameraRig: React.FC<CameraRigProps> = ({ targetPosition, lockOnRobot = false }) => {
   const controlsRef = useRef<OrbitControlsImpl>(null);

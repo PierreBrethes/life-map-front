@@ -10,12 +10,18 @@ import IslandManagementPanel from './IslandManagementPanel';
 import { useLifeMapMutations } from '../hooks/useLifeMapMutations';
 import { useStore } from '../store/useStore';
 import { useSettings } from '../hooks/useLifeMapData';
+import { OnboardingInput } from './OnboardingInput';
 
 interface UIOverlayProps {
     categories: Category[];
     onSelect: (categoryName: string, item: LifeItem) => void;
     onUpdateItem: (categoryName: string, itemId: string, updates: Partial<LifeItem>) => void;
     onDelete: () => void;
+
+    // Agent Props
+    isAgentStreaming: boolean;
+    isOnboarding: boolean;
+    onAgentMessage: (text: string) => void;
 }
 
 const UIOverlay: React.FC<UIOverlayProps> = ({
@@ -23,7 +29,11 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     onSelect,
     onUpdateItem,
     onDelete,
+    isAgentStreaming,
+    isOnboarding,
+    onAgentMessage
 }) => {
+    // ... existing hooks
     const {
         selection, setSelection,
         connectionMode, startConnection, cancelConnection,
@@ -48,6 +58,8 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
         ? "bg-slate-900/80 backdrop-blur-xl border-slate-700/50 text-white"
         : "bg-white/80 backdrop-blur-xl border-white/50 text-gray-800";
 
+    // ... helper classes
+
     const inputClass = isDark
         ? "bg-slate-800/50 border-slate-700 focus:border-indigo-400 text-white placeholder-slate-500"
         : "bg-white/80 border-white/50 focus:border-indigo-400 text-gray-700 placeholder-gray-400";
@@ -58,6 +70,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
     const textPrimary = isDark ? "text-white" : "text-gray-900";
     const textSecondary = isDark ? "text-slate-400" : "text-gray-500";
+
 
     useEffect(() => {
         if (!searchQuery.trim()) {
@@ -193,135 +206,168 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
             <div className={`absolute inset-0 pointer-events-none flex flex-col justify-between ${textPrimary}`}>
 
-                {/* Top-Left Search Bar */}
-                <div className="absolute top-6 left-6 z-40 pointer-events-auto w-72 flex gap-3">
-                    <div className="relative group flex-1">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Icons.Search className={`h-4 w-4 ${isDark ? 'text-slate-500' : 'text-gray-400'} group-focus-within:text-indigo-500 transition-colors`} />
-                        </div>
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Escape' && setSearchQuery('')}
-                            className={`block w-full pl-10 pr-3 py-2.5 rounded-xl border text-sm shadow-lg shadow-gray-900/5 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-medium ${inputClass}`}
-                            placeholder="Rechercher..."
-                        />
-
-                        {/* Search Results Dropdown */}
-                        {searchQuery && (
-                            <div className={`absolute top-full left-0 w-full mt-2 border rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200 ${glassPanelClass}`}>
-                                {searchResults.length > 0 ? (
-                                    <div className="py-1">
-                                        {searchResults.map((res) => (
-                                            <button
-                                                key={res.item.id}
-                                                onClick={() => {
-                                                    onSelect(res.categoryName, res.item);
-                                                    setSearchQuery('');
-                                                }}
-                                                className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between group ${isDark ? 'hover:bg-indigo-500/20' : 'hover:bg-indigo-50'}`}
-                                            >
-                                                <div>
-                                                    <p className={`text-sm font-semibold group-hover:text-indigo-500 ${textPrimary}`}>{res.item.name}</p>
-                                                    <p className={`text-xs uppercase font-bold tracking-wider ${textSecondary}`}>{res.categoryName}</p>
-                                                </div>
-                                                {getStatusBadge(res.item.status)}
-                                            </button>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className={`px-4 py-3 text-sm text-center ${textSecondary}`}>
-                                        Aucun résultat
-                                    </div>
-                                )}
+                {/* TOP LEFT: SEARCH (Only show if NOT onboarding) */}
+                {!isOnboarding && (
+                    <div className="absolute top-6 left-6 z-40 pointer-events-auto w-72 flex gap-3">
+                        <div className="relative group flex-1">
+                            {/* ... Search Input Logic ... */}
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Icons.Search className={`h-4 w-4 ${isDark ? 'text-slate-500' : 'text-gray-400'} group-focus-within:text-indigo-500 transition-colors`} />
                             </div>
-                        )}
-                    </div>
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Escape' && setSearchQuery('')}
+                                className={`block w-full pl-10 pr-3 py-2.5 rounded-xl border text-sm shadow-lg shadow-gray-900/5 focus:ring-2 focus:ring-indigo-200 outline-none transition-all font-medium ${inputClass}`}
+                                placeholder="Rechercher..."
+                            />
+                            {/* Search Results Dropdown */}
+                            {searchQuery && (
+                                <div className={`absolute top-full left-0 w-full mt-2 border rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-200 ${glassPanelClass}`}>
+                                    {searchResults.length > 0 ? (
+                                        <div className="py-1">
+                                            {searchResults.map((res) => (
+                                                <button
+                                                    key={res.item.id}
+                                                    onClick={() => {
+                                                        onSelect(res.categoryName, res.item);
+                                                        setSearchQuery('');
+                                                    }}
+                                                    className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between group ${isDark ? 'hover:bg-indigo-500/20' : 'hover:bg-indigo-50'}`}
+                                                >
+                                                    <div>
+                                                        <p className={`text-sm font-semibold group-hover:text-indigo-500 ${textPrimary}`}>{res.item.name}</p>
+                                                        <p className={`text-xs uppercase font-bold tracking-wider ${textSecondary}`}>{res.categoryName}</p>
+                                                    </div>
+                                                    {getStatusBadge(res.item.status)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className={`px-4 py-3 text-sm text-center ${textSecondary}`}>
+                                            Aucun résultat
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
 
-                    {/* Profile / Settings Button */}
-                    <button
-                        onClick={() => setIsSettingsOpen(true)}
-                        className={`flex items-center justify-center w-11 h-11 rounded-xl shadow-lg border transition-all active:scale-95 ${inputClass}`}
-                    >
-                        <Icons.User size={20} className={isDark ? 'text-slate-300' : 'text-gray-600'} />
-                    </button>
-                </div>
-
-                {/* Top-Right Notification Widget */}
-                <div className="absolute top-6 right-6 z-40 pointer-events-auto">
-                    <NotificationWidget
-                        categories={categories}
-                        isDarkMode={isDark}
-                        onItemClick={onSelect}
-                    />
-                </div>
-
-                {/* Bottom Action Bar (Split into two groups) */}
-                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-auto pointer-events-auto z-40 flex items-center gap-4">
-
-                    {/* Group 1: Connections */}
-                    <div className={`flex items-center gap-2 border p-2 rounded-full shadow-xl ring-1 ring-gray-900/5 ${glassPanelClass}`}>
-
-                        {/* TOGGLE CONNECTIONS BUTTON */}
+                        {/* Profile / Settings Button */}
                         <button
-                            onClick={toggleConnections}
-                            className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${showConnections
-                                ? (isDark ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/50' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200')
-                                : (isDark ? 'bg-slate-800 text-slate-500 hover:bg-slate-700' : 'bg-gray-50 text-gray-400 hover:bg-gray-100')
-                                }`}
-                            title={showConnections ? "Masquer les liens" : "Afficher les liens"}
+                            onClick={() => setIsSettingsOpen(true)}
+                            className={`flex items-center justify-center w-11 h-11 rounded-xl shadow-lg border transition-all active:scale-95 ${inputClass}`}
                         >
-                            <Icons.Link2 size={18} />
-                        </button>
-
-                        <div className={`w-px h-6 mx-1 ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`}></div>
-
-                        {/* ADD CONNECTION BUTTON */}
-                        <button
-                            onClick={connectionMode === 'idle' ? () => startConnection(selection || undefined) : cancelConnection}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${connectionMode !== 'idle'
-                                ? 'bg-red-500 hover:bg-red-600 text-white shadow-md shadow-red-500/20'
-                                : (isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-700')
-                                }`}
-                        >
-                            {connectionMode !== 'idle' ? <Icons.X size={18} /> : <Icons.Network size={18} />}
-                            <span>{connectionMode !== 'idle' ? 'Annuler' : 'Nouveau Lien'}</span>
+                            <Icons.User size={20} className={isDark ? 'text-slate-300' : 'text-gray-600'} />
                         </button>
                     </div>
+                )}
 
-                    {/* Group 2: Creation */}
-                    <div className={`flex items-center gap-2 border p-2 rounded-full shadow-xl ring-1 ring-gray-900/5 ${glassPanelClass}`}>
-                        {/* MANAGE ISLANDS BUTTON */}
-                        <button
-                            onClick={() => setIslandManagementOpen(true)}
-                            className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'}`}
-                            title="Gérer mes îles"
-                        >
-                            <Icons.Settings2 size={18} />
-                        </button>
-
-                        <div className={`w-px h-6 mx-1 ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`}></div>
-
-                        {/* ADD CATEGORY BUTTON */}
-                        <button
-                            onClick={() => setModalMode('category')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-slate-200' : 'bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700'}`}
-                        >
-                            <Icons.Layers size={18} />
-                            <span>Nouvelle Île</span>
-                        </button>
-
-                        {/* ADD ITEM BUTTON */}
-                        <button
-                            onClick={() => setModalMode('item')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-slate-200' : 'bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700'}`}
-                        >
-                            <Icons.Plus size={18} />
-                            <span>Ajouter Bloc</span>
-                        </button>
+                {/* Notification Widget (Top Right) - also maybe hide on onboarding? Let's keep it hidden if empty. */}
+                {!isOnboarding && (
+                    <div className="absolute top-6 right-6 z-40 pointer-events-auto">
+                        <NotificationWidget
+                            categories={categories}
+                            isDarkMode={isDark}
+                            onItemClick={onSelect}
+                        />
                     </div>
-                </div>
+                )}
+
+
+                {/* === ONBOARDING CHAT INPUT === */}
+                {isOnboarding ? (
+                    <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 z-50 pointer-events-auto animate-in slide-in-from-bottom-8 duration-500">
+                        <OnboardingInput
+                            onSubmit={onAgentMessage}
+                            isLoading={isAgentStreaming}
+                        // Add custom styling here if needed to match Overlay
+                        />
+                    </div>
+                ) : (
+                    // === MAIN APP BOTTOM BAR ===
+                    <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-auto pointer-events-auto z-40 flex items-center gap-4">
+
+                        {/* Integrated Chat Input Mini (Left of buttons) */}
+                        <div className={`flex items-center gap-2 border p-1 rounded-full shadow-xl ring-1 ring-gray-900/5 h-[50px] ${glassPanelClass}`}>
+                            <div className="w-64 h-full">
+                                {/* Reusing OnboardingInput but maybe we need a 'mini' mode? 
+                                    Or just standard input. OnboardingInput has "Send" button inside. 
+                                    Let's use OnboardingInput but constrain its width.
+                                    Actually OnboardingInput has specific styling. Let's see if we can adapt it or just inline a simple input.
+                                */}
+                                <OnboardingInput
+                                    onSubmit={onAgentMessage}
+                                    isLoading={isAgentStreaming}
+                                    minimal={true}
+                                />
+                            </div>
+                        </div>
+
+
+                        {/* Group 1: Connections */}
+                        <div className={`flex items-center gap-2 border p-2 rounded-full shadow-xl ring-1 ring-gray-900/5 ${glassPanelClass}`}>
+
+                            {/* TOGGLE CONNECTIONS BUTTON */}
+                            <button
+                                onClick={toggleConnections}
+                                className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${showConnections
+                                    ? (isDark ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/50' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200')
+                                    : (isDark ? 'bg-slate-800 text-slate-500 hover:bg-slate-700' : 'bg-gray-50 text-gray-400 hover:bg-gray-100')
+                                    }`}
+                                title={showConnections ? "Masquer les liens" : "Afficher les liens"}
+                            >
+                                <Icons.Link2 size={18} />
+                            </button>
+
+                            <div className={`w-px h-6 mx-1 ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`}></div>
+
+                            {/* ADD CONNECTION BUTTON */}
+                            <button
+                                onClick={connectionMode === 'idle' ? () => startConnection(selection || undefined) : cancelConnection}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${connectionMode !== 'idle'
+                                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-md shadow-red-500/20'
+                                    : (isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-700')
+                                    }`}
+                            >
+                                {connectionMode !== 'idle' ? <Icons.X size={18} /> : <Icons.Network size={18} />}
+                                <span>{connectionMode !== 'idle' ? 'Annuler' : 'Nouveau Lien'}</span>
+                            </button>
+                        </div>
+
+                        {/* Group 2: Creation */}
+                        <div className={`flex items-center gap-2 border p-2 rounded-full shadow-xl ring-1 ring-gray-900/5 ${glassPanelClass}`}>
+                            {/* MANAGE ISLANDS BUTTON */}
+                            <button
+                                onClick={() => setIslandManagementOpen(true)}
+                                className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'}`}
+                                title="Gérer mes îles"
+                            >
+                                <Icons.Settings2 size={18} />
+                            </button>
+
+                            <div className={`w-px h-6 mx-1 ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`}></div>
+
+                            {/* ADD CATEGORY BUTTON */}
+                            <button
+                                onClick={() => setModalMode('category')}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-slate-200' : 'bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700'}`}
+                            >
+                                <Icons.Layers size={18} />
+                                <span>Nouvelle Île</span>
+                            </button>
+
+                            {/* ADD ITEM BUTTON */}
+                            <button
+                                onClick={() => setModalMode('item')}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-slate-200' : 'bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700'}`}
+                            >
+                                <Icons.Plus size={18} />
+                                <span>Ajouter Bloc</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
 
             </div>
         </>

@@ -10,6 +10,35 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   message,
   position = [1.5, 2, 0]
 }) => {
+  const [displayedMessage, setDisplayedMessage] = React.useState('');
+
+  // Typewriter effect
+  React.useEffect(() => {
+    // If message was reset (new turn), reset displayed
+    if (message.length < displayedMessage.length && message.length < 10) {
+      setDisplayedMessage(message);
+      return;
+    }
+
+    let timeoutId: NodeJS.Timeout;
+
+    // If we have more text to show
+    if (displayedMessage.length < message.length) {
+      // Calculate delay - faster if we are far behind
+      const distance = message.length - displayedMessage.length;
+      const delay = Math.max(10, 50 - (distance * 2));
+
+      timeoutId = setTimeout(() => {
+        setDisplayedMessage(message.slice(0, displayedMessage.length + 1));
+      }, delay);
+    } else if (displayedMessage !== message) {
+      // If message changed but length is same or shorter (unlikely unless reset), sync
+      setDisplayedMessage(message);
+    }
+
+    return () => clearTimeout(timeoutId);
+  }, [message, displayedMessage]);
+
   return (
     <group position={position}>
       <Html
@@ -18,7 +47,6 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
         occlude={false}
         style={{
           pointerEvents: 'none',
-          // Anchor from bottom-left, so it grows upward
           transform: 'translateY(-100%)',
         }}
       >
@@ -34,7 +62,7 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
             fontFamily: "'Inter', 'Segoe UI', sans-serif",
           }}
         >
-          {/* Speech bubble tail */}
+          {/* Tail elements remain unchanged */}
           <div
             style={{
               position: 'absolute',
@@ -61,7 +89,6 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
             }}
           />
 
-          {/* Message text */}
           <p
             style={{
               margin: 0,
@@ -71,7 +98,8 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
               fontWeight: 500,
             }}
           >
-            {message}
+            {displayedMessage}
+            <span style={{ opacity: 0.5 }}>|</span> {/* Cursor cursor */}
           </p>
         </div>
       </Html>

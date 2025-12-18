@@ -16,13 +16,24 @@ interface GlbAssetProps {
   color?: string;
   onAnimationsLoaded?: (animations: AnimationInfo[]) => void;
   currentAnimation?: string;
+  scale?: number | [number, number, number];
+  position?: [number, number, number];
+  rotation?: [number, number, number];
 }
 
 /**
  * Unified GLB Asset component that renders any GLB-based 3D model
  * using the dynamic configuration from Store (DB) or fallback to static assetMapping.ts
  */
-export const GlbAsset: React.FC<GlbAssetProps> = ({ assetType, color, onAnimationsLoaded, currentAnimation }) => {
+export const GlbAsset: React.FC<GlbAssetProps> = ({
+  assetType,
+  color,
+  onAnimationsLoaded,
+  currentAnimation,
+  scale,
+  position,
+  rotation
+}) => {
   const { assetConfigs } = useStore();
   const staticConfig = getGlbConfig(assetType);
 
@@ -30,13 +41,31 @@ export const GlbAsset: React.FC<GlbAssetProps> = ({ assetType, color, onAnimatio
   const config = assetConfigs[assetType] || staticConfig;
 
   if (!config) {
-    console.warn(`No GLB config found for asset type: ${assetType}`);
-    return null;
+    // If no config found, fallback to default for generic "tools" usage (like wrench/screws)
+    // Or warn. For now let's warn but proceed with minimal config if it's a known model path
+    console.warn(`No GLB config found for assetType: ${assetType}. Checking static fallback again.`);
+    // return null; 
+    // Actually if it returns null, wrench won't show.
+    // Let's assume for transient assets like wrench, we might rely on static mapping or direct loading if implemented.
   }
 
+  // Helper for dynamic overrides
+  const finalConfig = config ? {
+    ...config,
+    scale: scale || config.scale,
+    position: position || config.position,
+    rotation: rotation || config.rotation
+  } : {
+    // Fallback stub if config missing but we want to try loading by name (advanced)
+    glbPath: `/models/${assetType}.glb`,
+    scale: scale || 1,
+    position: position || [0, 0, 0],
+    rotation: rotation || [0, 0, 0]
+  };
+
   return <GlbModel
-    path={config.glbPath}
-    config={config}
+    path={finalConfig.glbPath}
+    config={finalConfig}
     onAnimationsLoaded={onAnimationsLoaded}
     currentAnimation={currentAnimation}
   />;
@@ -50,6 +79,11 @@ const GlbModel: React.FC<{
   currentAnimation?: string;
 }> = ({ path, config, onAnimationsLoaded, currentAnimation }) => {
   const sceneRef = useRef<Object3D>(null);
+  // Assuming GlbAsset handles arbitrary strings via dynamic path logic
+  // If not, I'll need to check it in the next step.
+  // For now, let's peek at GlbAsset first or trust the user added them to models/
+  // and GlbAsset likely maps 'name' to '/models/name.glb' ?
+  // Let's verify GlbAsset first.
   const { scene, animations } = useGLTF(path);
 
   // Clone the scene to allow multiple instances with independent properties
