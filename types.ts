@@ -98,7 +98,9 @@ export type AssetType =
   // Social
   | 'family' | 'friends' | 'pet'
   // Legacy / Fallbacks
-  | 'finance' | 'health' | 'home' | 'nature' | 'tech' | 'people';
+  | 'finance' | 'health' | 'home' | 'nature' | 'tech' | 'people'
+  // Special
+  | 'robot';
 
 export interface LifeItem {
   id: string;

@@ -7,6 +7,7 @@ import CameraRig from './CameraRig';
 import Connections from './Connections';
 import { SelectionState, LifeItem, Category, Dependency } from '../types';
 import { getIslandPosition, getItemWorldPosition } from '../utils/layout';
+import { FloatingRobot } from './FloatingRobot';
 
 interface ExperienceProps {
   data: Category[];
@@ -19,6 +20,8 @@ interface ExperienceProps {
   selectedDependencyId: string | null;
   onSelectDependency: (id: string | null) => void;
   onDeleteDependency: (id: string) => void;
+  isOnboarding: boolean;
+  onOnboardingComplete: () => void;
 }
 
 /** Decorative ocean floor plane */
@@ -45,7 +48,9 @@ const Experience: React.FC<ExperienceProps> = ({
   isDarkMode,
   selectedDependencyId,
   onSelectDependency,
-  onDeleteDependency
+  onDeleteDependency,
+  isOnboarding,
+  onOnboardingComplete
 }) => {
 
   const handleMiss = () => {
@@ -64,6 +69,9 @@ const Experience: React.FC<ExperienceProps> = ({
     return pos;
   }, [selection, data]);
 
+  // Determine if camera should lock on robot
+  const shouldLockOnRobot = data.length === 0 && isOnboarding;
+
   return (
     <Canvas
       shadows
@@ -73,7 +81,7 @@ const Experience: React.FC<ExperienceProps> = ({
       gl={{ preserveDrawingBuffer: true }}
     >
       {/* Cinematic Camera Controller */}
-      <CameraRig targetPosition={cameraTarget} />
+      <CameraRig targetPosition={cameraTarget} lockOnRobot={shouldLockOnRobot} />
 
       {/* Lighting */}
       <color attach="background" args={[isDarkMode ? '#020617' : '#f0f9ff']} />
@@ -107,18 +115,22 @@ const Experience: React.FC<ExperienceProps> = ({
 
       {/* Islands */}
       <group position={[0, 0, 0]}>
-        {data.map((category, index) => {
-          const position = getIslandPosition(index, data.length);
-          return (
-            <Island
-              key={category.id}
-              category={category}
-              position={position}
-              selection={selection}
-              onSelect={onBlockClick}
-            />
-          );
-        })}
+        {data.length === 0 ? (
+          <FloatingRobot onOnboardingComplete={onOnboardingComplete} />
+        ) : (
+          data.map((category, index) => {
+            const position = getIslandPosition(index, data.length);
+            return (
+              <Island
+                key={category.id}
+                category={category}
+                position={position}
+                selection={selection}
+                onSelect={onBlockClick}
+              />
+            );
+          })
+        )}
       </group>
 
       {/* Links / Connections Layer */}

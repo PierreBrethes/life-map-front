@@ -1,8 +1,7 @@
 
-import React, { Suspense, useEffect, useRef } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import Experience from './Experience';
 import UIOverlay from './UIOverlay';
-import OnboardingWizard from './OnboardingWizard';
 import { Category, LifeItem, Dependency } from '../types';
 import { useStore } from '../store/useStore';
 import { useLifeMapMutations } from '../hooks/useLifeMapMutations';
@@ -11,6 +10,12 @@ import api from '../api/axios';
 import { ItemDetailSidebar } from './sidebar';
 
 const GameLayout: React.FC = () => {
+  // --- ONBOARDING STATE ---
+  const [isOnboarding, setIsOnboarding] = useState(true);
+
+  const handleOnboardingComplete = () => {
+    setIsOnboarding(false);
+  };
   // --- GLOBAL STORE ---
   const {
     selection, setSelection,
@@ -96,38 +101,7 @@ const GameLayout: React.FC = () => {
     }
   }, [categories, selection, setSelection]);
 
-  const handleOnboardingFinish = async (newData: Category[]) => {
-    try {
-      for (const cat of newData) {
-        await createCategory.mutateAsync({
-          name: cat.name,
-          color: cat.color,
-          icon: typeof cat.icon === 'string' ? cat.icon : 'HelpCircle'
-        });
 
-        const createdCat = await api.get<Category[]>(`/categories`).then(res => res.data.find(c => c.name === cat.name));
-
-        if (createdCat) {
-          for (const item of cat.items) {
-            await createItem.mutateAsync({
-              categoryId: createdCat.id,
-              name: item.name,
-              value: item.value || "0",
-              type: item.type || "text",
-              status: item.status || "ok",
-              assetType: item.assetType || "finance",
-            });
-          }
-        }
-      }
-
-      window.location.reload();
-
-    } catch (e) {
-      console.error("Error saving onboarding data", e);
-      alert("Erreur lors de la sauvegarde de votre univers. Veuillez réessayer.");
-    }
-  };
 
   // Unified Block Click Handler
   const handleBlockClick = (categoryName: string, item: LifeItem) => {
@@ -181,16 +155,13 @@ const GameLayout: React.FC = () => {
   };
 
   const isDarkMode = settings?.theme === 'dark';
-  // Show onboarding if there is absolutely no data
-  const showOnboarding = !isLoadingCategories && categories.length === 0;
+
+
 
   if (isLoadingCategories) return <div className="w-full h-screen flex items-center justify-center">Loading LifeMap...</div>;
 
   return (
     <div className={`relative w-full h-screen overflow-hidden transition-colors duration-500 ${isDarkMode ? 'dark bg-slate-950' : 'bg-[#f0f9ff]'}`}>
-
-      {/* Onboarding Wizard (Overlay on top of everything) */}
-      {showOnboarding && <OnboardingWizard onFinish={handleOnboardingFinish} />}
 
       {/* 3D Layer */}
       <div className="absolute inset-0 z-0">
@@ -209,21 +180,29 @@ const GameLayout: React.FC = () => {
             selectedDependencyId={selectedDependencyId}
             onSelectDependency={selectDependency}
             onDeleteDependency={handleDeleteDependency}
+            isOnboarding={isOnboarding && categories.length === 0}
+            onOnboardingComplete={handleOnboardingComplete}
           />
         </Suspense>
       </div>
 
-      {/* 2D UI Layer (HUD) */}
-      {!showOnboarding && (
-        <div className="absolute inset-0 z-10 pointer-events-none">
-          <UIOverlay
-            categories={categories}
-            onSelect={handleBlockClick}
-            onUpdateItem={handleUpdateItem}
-            onDelete={handleDeleteElement}
-          />
-        </div>
-      )}
+      {/* 2D UI Layer (HUD) - hidden during onboarding with fade-in animation */}
+      <div
+        className={`
+          absolute inset-0 z-10 pointer-events-none
+          transition-all duration-700 ease-out
+          ${(isOnboarding && categories.length === 0)
+            ? 'opacity-0 translate-y-4'
+            : 'opacity-100 translate-y-0'}
+        `}
+      >
+        <UIOverlay
+          categories={categories}
+          onSelect={handleBlockClick}
+          onUpdateItem={handleUpdateItem}
+          onDelete={handleDeleteElement}
+        />
+      </div>
 
       {/* Sidebar (Overlay on the right) */}
       <div

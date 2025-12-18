@@ -163,5 +163,20 @@
       0
     ],
     "previewScale": 1.0
+  },
+  "robot": {
+    "glbPath": "/models/robot.glb",
+    "scale": 0.6,
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "previewScale": 1.0
   }
 }

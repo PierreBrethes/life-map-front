@@ -68,6 +68,7 @@ export const ALL_ASSETS: AssetOption[] = [
   { label: 'Famille (Maison)', value: 'family' },
   { label: 'Amis (Groupe)', value: 'friends' },
   { label: 'Animal (Patte)', value: 'pet' },
+  { label: 'Robot (Robot)', value: 'robot' },
 
   // Legacy (pour compatibilité)
   { label: 'Finance (Pile)', value: 'finance' },
@@ -126,6 +127,7 @@ export const ASSET_METADATA: Record<AssetType, AssetMetadata> = {
   'friends': { topOffset: 1.0 },
   'pet': { topOffset: 0.6 },
   'people': { topOffset: 0.9 },
+  'robot': { topOffset: 0.8 },
 };
 
 export const getAssetMetadata = (assetType: AssetType): AssetMetadata => {

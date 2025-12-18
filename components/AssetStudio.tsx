@@ -1,9 +1,10 @@
 
 import React, { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stage, Grid, ContactShadows, useGLTF } from '@react-three/drei';
-import { useControls, button } from 'leva';
-import { GlbAssetConfig } from '../utils/assetMapping';
+import { OrbitControls, Grid, ContactShadows, useGLTF, useAnimations, Environment } from '@react-three/drei';
+import { clone } from 'three/addons/utils/SkeletonUtils.js';
+import { useControls, button, Leva } from 'leva';
+import { GlbAssetConfig, GLB_ASSET_CONFIG } from '../utils/assetMapping';
 import { useAssetConfigs } from '../hooks/useLifeMapData';
 import { assetsApi } from '../api/endpoints/assets';
 import { useQueryClient } from '@tanstack/react-query';
@@ -12,12 +13,38 @@ import { useQueryClient } from '@tanstack/react-query';
 const GlbViewer: React.FC<{
   path: string;
   config: GlbAssetConfig;
-}> = ({ path, config }) => {
-  const { scene } = useGLTF(path);
+  onAnimationsLoaded?: (names: string[]) => void;
+  currentAnimation?: string;
+}> = ({ path, config, onAnimationsLoaded, currentAnimation }) => {
+  // Use the internal GlbModel logic directly here or reuse GlbAsset?
+  // Since GlbAsset is specific to app logic (DB store), we might duplicate logic or refactor GlbAsset to be reusable.
+  // Actually, GlbAsset uses useStore internally.
+  // For Studio, we want to preview 'localConfig', which might differ from store.
+  // So we should replicate the animation logic of GlbAsset here for the previewer.
+
+  const { scene, animations } = useGLTF(path);
+  const { ref, actions } = useAnimations(animations);
+  const clonedScene = React.useMemo(() => clone(scene), [scene]);
+
+  useEffect(() => {
+    if (animations.length > 0 && onAnimationsLoaded) {
+      onAnimationsLoaded(animations.map(c => c.name));
+    }
+  }, [animations, onAnimationsLoaded]);
+
+  useEffect(() => {
+    // Stop all animations if currentAnimation is empty or changes
+    Object.values(actions).forEach((a: any) => a?.stop());
+
+    if (currentAnimation && actions[currentAnimation]) {
+      actions[currentAnimation]?.reset().fadeIn(0.5).play();
+    }
+  }, [currentAnimation, actions]);
 
   return (
     <primitive
-      object={scene.clone()}
+      ref={ref}
+      object={clonedScene}
       scale={[config.scale, config.scale, config.scale]}
       position={config.position}
       rotation={config.rotation}
@@ -29,12 +56,12 @@ const AssetStudio: React.FC = () => {
   const queryClient = useQueryClient();
   const { data: fetchedConfigs, isLoading } = useAssetConfigs();
 
-  // Local state initialized with fetched configs or empty
-  const [localConfig, setLocalConfig] = useState<Record<string, GlbAssetConfig>>({});
+  // Local state initialized with combined configs
+  const [localConfig, setLocalConfig] = useState<Record<string, GlbAssetConfig>>(GLB_ASSET_CONFIG as Record<string, GlbAssetConfig>);
 
   useEffect(() => {
     if (fetchedConfigs) {
-      setLocalConfig(fetchedConfigs);
+      setLocalConfig(prev => ({ ...prev, ...fetchedConfigs }));
     }
   }, [fetchedConfigs]);
 
@@ -49,17 +76,37 @@ const AssetStudio: React.FC = () => {
   // Get config for CURRENT selection
   const currentAssetConfig = localConfig[selectedAssetKey];
 
+  // Animation State
+  const [animations, setAnimations] = useState<string[]>([]);
+  const [activeAnimation, setActiveAnimation] = useState<string>('');
+
   // Leva Controls for the SELECTED asset
   // We use Leva to drive this state.
-  const [controls, setControls] = useControls('Transform', () => {
+  const [controls, setControls] = useControls('Transform Settings 🔧', () => {
     if (!currentAssetConfig) return {};
     return {
-      scale: { value: currentAssetConfig.scale, min: 0.01, max: 5, step: 0.01 },
-      position: { value: currentAssetConfig.position, step: 0.05 },
-      rotation: { value: currentAssetConfig.rotation, step: 0.05 },
-      previewScale: { value: currentAssetConfig.previewScale, min: 0.1, max: 3, step: 0.1 },
+      scale: { value: currentAssetConfig.scale, min: 0.01, max: 2.5, step: 0.01 },
+      position: { value: currentAssetConfig.position, step: 0.01 },
+      rotation: { value: currentAssetConfig.rotation, step: 0.01 },
+      previewScale: { value: currentAssetConfig.previewScale, min: 0.1, max: 2.0, step: 0.01 },
     };
   }, [selectedAssetKey, currentAssetConfig]);
+
+  // Animation Controls in Leva
+  useControls('Animations 🎬', () => {
+    if (animations.length === 0) return { Info: { value: 'No animations found', editable: false } };
+
+    // Create a button for each animation
+    const animControls: Record<string, any> = {};
+    animations.forEach(anim => {
+      animControls[anim] = button(() => setActiveAnimation(anim));
+    });
+
+    // Add Stop button
+    animControls['STOP'] = button(() => setActiveAnimation(''));
+
+    return animControls;
+  }, [animations]);
 
   // Update local config state when Leva changes
   useEffect(() => {
@@ -97,20 +144,52 @@ const AssetStudio: React.FC = () => {
 
   return (
     <div className="w-full h-screen flex bg-slate-900 text-white">
+      <Leva
+        theme={{
+          sizes: {
+            rootWidth: '420px',
+            controlWidth: '240px',
+            rowHeight: '36px',
+            folderTitleHeight: '30px',
+            checkboxSize: '24px',
+            joystickWidth: '150px',
+            joystickHeight: '150px',
+            colorPickerWidth: '240px',
+            colorPickerHeight: '150px',
+            monitorHeight: '90px',
+            titleBarHeight: '58px',
+          },
+          fontSizes: {
+            root: '16px',
+            toolTip: '16px',
+          },
+          space: {
+            rowGap: '6px',
+            colGap: '6px',
+          }
+        }}
+      />
       {/* 3D Viewport */}
       <div className="flex-1 relative">
         <Canvas shadows camera={{ position: [3, 3, 3], fov: 50 }}>
           <color attach="background" args={['#1e293b']} />
           <Suspense fallback={null}>
-            <Stage environment="city" intensity={0.5} adjustCamera={false}>
+            {/* Replacement for Stage: Manual Lighting & Environment for true scale */}
+            <ambientLight intensity={0.5} />
+            <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+            <Environment preset="city" />
+
+            <group position={[0, 0, 0]}>
               {currentAssetConfig && (
                 <GlbViewer
                   key={selectedAssetKey} // Remount on key change
                   path={currentAssetConfig.glbPath}
                   config={currentAssetConfig}
+                  onAnimationsLoaded={setAnimations}
+                  currentAnimation={activeAnimation}
                 />
               )}
-            </Stage>
+            </group>
           </Suspense>
           <OrbitControls makeDefault />
           <Grid infiniteGrid fadeDistance={30} sectionColor="#4f46e5" cellColor="#64748b" />
