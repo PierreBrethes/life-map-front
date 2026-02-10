@@ -1,6 +1,7 @@
 
 import { useState, useRef, useCallback } from 'react';
-import { useStore } from '../store/useStore';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
 
 interface AgentStreamState {
   messages: string; // The full streaming response
@@ -30,7 +31,7 @@ export const useAgentStream = () => {
     try {
       // Create session via ADK API
       // Using 'agents' as appName per user configuration
-      await fetch(`http://localhost:8000/apps/agents/users/default-user/sessions/${newSessionId}`, {
+      await fetch(`${API_BASE}/apps/agents/users/default-user/sessions/${newSessionId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}) // Empty body usually fine for creating session
@@ -65,7 +66,7 @@ export const useAgentStream = () => {
     abortControllerRef.current = new AbortController();
 
     try {
-      const response = await fetch('http://localhost:8000/run_sse', {
+      const response = await fetch(`${API_BASE}/run_sse`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
