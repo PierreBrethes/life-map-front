@@ -2,6 +2,8 @@
 import { useState, useRef, useCallback } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/api$/, '') || 'http://localhost:8000';
+const API_AUTH = import.meta.env.VITE_API_AUTH || '';
+const AUTH_HEADERS: Record<string, string> = API_AUTH ? { 'Authorization': `Basic ${API_AUTH}` } : {};
 
 interface AgentStreamState {
   messages: string; // The full streaming response
@@ -33,7 +35,7 @@ export const useAgentStream = () => {
       // Using 'agents' as appName per user configuration
       await fetch(`${API_BASE}/apps/agents/users/default-user/sessions/${newSessionId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...AUTH_HEADERS },
         body: JSON.stringify({}) // Empty body usually fine for creating session
       });
       setSessionId(newSessionId);
@@ -70,6 +72,7 @@ export const useAgentStream = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...AUTH_HEADERS,
         },
         body: JSON.stringify({
           appName: 'agents',
