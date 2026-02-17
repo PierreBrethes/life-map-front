@@ -57,7 +57,7 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
             padding: '16px 24px',
             boxShadow: '0 8px 32px rgba(99, 102, 241, 0.25), 0 4px 12px rgba(0,0,0,0.1)',
             border: '2px solid rgba(99, 102, 241, 0.3)',
-            maxWidth: '280px',
+            maxWidth: '380px',
             position: 'relative',
             fontFamily: "'Inter', 'Segoe UI', sans-serif",
           }}

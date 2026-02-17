@@ -97,7 +97,7 @@ export const FloatingRobot: React.FC<FloatingRobotProps> = ({
         floatIntensity={1}
         floatingRange={[0.5, 1]}
       >
-        <group position={[0, 1, 0]}>
+        <group position={[0, -1, 0]}>
           <GlbAsset
             assetType={"robot" as any}
             color="#6366f1"
@@ -111,7 +111,7 @@ export const FloatingRobot: React.FC<FloatingRobotProps> = ({
           {messages && (
             <SpeechBubble
               message={messages}
-              position={[1.8, 2.5, 0]}
+              position={[3, 1.2, 0]}
             />
           )}
         </group>

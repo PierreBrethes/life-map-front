@@ -125,14 +125,12 @@ const Experience: React.FC<ExperienceProps> = ({
 
       {/* Islands */}
       <group position={[0, 0, 0]}>
-        {data.length === 0 ? (
           <FloatingRobot
             onOnboardingComplete={onOnboardingComplete}
             messages={agentMessages}
             robotAnimation={agentRobotAnimation}
             isThinking={isAgentThinking}
-          />
-        ) : (
+          /> {
           data.map((category, index) => {
             const position = getIslandPosition(index, data.length);
             return (
@@ -144,8 +142,7 @@ const Experience: React.FC<ExperienceProps> = ({
                 onSelect={onBlockClick}
               />
             );
-          })
-        )}
+          })}
       </group>
 
       {/* Links / Connections Layer */}
