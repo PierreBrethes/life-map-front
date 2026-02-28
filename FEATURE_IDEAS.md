@@ -2,61 +2,6 @@
 
 > Document généré le 11 décembre 2025
 
----
-
-## 🚀 Améliorations UX/Gamification
-
-### 1. Système de Niveaux & XP
-- Gagner de l'XP en complétant des tâches (maintenance, rendez-vous santé, objectifs financiers)
-- Débloquer des thèmes/couleurs pour les îles en montant de niveau
-- Badges/achievements visuels (ex: "100 jours sans alerte critique")
-
-### 2. Mode "Météo" dynamique sur les îles
-- Île ensoleillée ☀️ si tout est OK
-- Nuages/pluie 🌧️ si warnings
-- Orage ⛈️ si alertes critiques
-- Animation 3D de particules (soleil, gouttes, éclairs)
-
-### 3. Animations de célébration
-- Confettis 3D quand un objectif est atteint
-- Feux d'artifice sur l'île concernée
-
----
-
-## 📊 Nouvelles Islands / Catégories
-
-### 4. Île "Documents" 📄
-- Gestion des documents importants (passeport, carte d'identité, permis)
-- Alertes avant expiration
-- Asset 3D : Classeur ou coffre-fort avec dossiers
-
-### 5. Île "Projets Perso" 🎯
-- Side projects, hobbies à développer
-- Suivi de progression par sous-tâches
-- Asset 3D : Tableau Kanban miniature ou bâtiment en construction
-
-### 6. Île "Budget Mensuel" 💰
-- Vue agrégée de toutes les dépenses du mois
-- Catégorisation automatique des transactions
-- Graphique donut 3D
-
----
-
-## 🔧 Widgets à ajouter
-
-### 7. Widget "Objectifs" (Goals) pour Finance
-- Définir un objectif (ex: 10 000€ d'épargne)
-- Barre de progression visuelle
-- Estimation de la date d'atteinte basée sur l'historique
-
-### 8. Widget "Rappels récurrents"
-- CT Scanner, contrôle technique voiture, etc.
-- Récurrence configurable (annuel, mensuel, etc.)
-
-### 9. Widget "Notes rapides"
-- Notes libres attachées à n'importe quel item
-- Markdown mini-éditeur
-
 ### 10. Widget "Liens/Documents"
 - Attacher des URL ou fichiers à un item
 - Ex: Contrat de location sur l'appartement
@@ -85,10 +30,6 @@
 
 ## 🔗 Intégrations & Automatisation
 
-### 15. Import automatique des transactions bancaires
-- Via API bancaire open banking (Bridge, Plaid, ou manuel CSV)
-- Création auto des entrées dans HistoryWidget
-
 ### 16. Sync avec Google Calendar
 - Auto-créer des HealthAppointments et SocialEvents depuis le calendrier
 
@@ -98,13 +39,34 @@
 
 ---
 
+## 🤖 Taquito (Assistant IA)
+
+### 18. Interaction Vocale 🎙️
+- Communiquer directement avec Taquito via le micro
+- Raccourci global + trigger word
+
+### 19. Gestion Intelligente des Tâches (Todos)
+- Tâches créées manuellement par l'utilisateur
+- Tâches suggérées/créées proactivement par Taquito
+- Synchro avec les widgets Bento
+
+### 20. Synchronisation Google Agenda
+- Connexion OAuth Google pour intégrer l'agenda réel au Widget Bento
+- Affichage natif dans l'interface Taquito
+
+### 21. Actions IA Proactives sur la 3D
+- Lors d'une discussion sur un sujet ("Où en est ma finance?"), Taquito tourne la caméra vers l'île concernée automatiquement.
+- Illuminer (Spotlight) les blocs ciblés pendant que l'IA en parle.
+
+---
+
 ## 📱 Multi-plateforme
 
-### 18. Mode Responsive / Mobile
+### 22. Mode Responsive / Mobile
 - Vue simplifiée liste sur mobile
 - Swipe entre les îles
 
-### 19. PWA (Progressive Web App)
+### 23. PWA (Progressive Web App)
 - Installation sur mobile
 - Fonctionnement offline avec service worker
 
@@ -116,8 +78,11 @@
 |----------|---------|--------|--------|
 | 🔴 Haute | Widget Objectifs Finance | Moyen | Élevé |
 | 🔴 Haute | Météo dynamique | Moyen | Élevé |
+| 🔴 Haute | Synchro Agenda & Tâches Taquito | Moyen | Élevé |
 | 🟡 Moyenne | Système XP/Niveaux | Élevé | Moyen |
 | 🟡 Moyenne | Île Documents | Moyen | Moyen |
+| 🟡 Moyenne | Actions IA Proactives 3D | Élevé | Moyen |
+| 🟢 Basse | Interaction Vocale | Très Élevé | Moyen |
 | 🟢 Basse | PWA | Faible | Moyen |
 | 🟢 Basse | Minimap | Faible | Faible |
 

@@ -5,8 +5,14 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/api$/, '') || 'ht
 const API_AUTH = import.meta.env.VITE_API_AUTH || '';
 const AUTH_HEADERS: Record<string, string> = API_AUTH ? { 'Authorization': `Basic ${API_AUTH}` } : {};
 
+export interface AgentMessage {
+  role: 'user' | 'agent';
+  content: string;
+}
+
 interface AgentStreamState {
   messages: string; // The full streaming response
+  conversationHistory: AgentMessage[];
   isStreaming: boolean;
   error: string | null;
   isOnboardingComplete: boolean;
@@ -16,6 +22,7 @@ interface AgentStreamState {
 export const useAgentStream = () => {
   const [state, setState] = useState<AgentStreamState>({
     messages: '',
+    conversationHistory: [],
     isStreaming: false,
     error: null,
     isOnboardingComplete: false,
@@ -50,9 +57,10 @@ export const useAgentStream = () => {
   }, [sessionId]);
 
   const sendMessage = useCallback(async (text: string) => {
-    // Reset previous streaming state
+    // Append user message to history, reset current streaming message
     setState(prev => ({
       ...prev,
+      conversationHistory: [...prev.conversationHistory, { role: 'user', content: text }],
       messages: '',
       isStreaming: true,
       error: null,
@@ -169,7 +177,18 @@ export const useAgentStream = () => {
         setState(prev => ({ ...prev, error: err.message }));
       }
     } finally {
-      setState(prev => ({ ...prev, isStreaming: false }));
+      // Finalize the streaming message by appending it to history
+      setState(prev => {
+        if (prev.messages.trim() !== '') {
+          return {
+            ...prev,
+            conversationHistory: [...prev.conversationHistory, { role: 'agent', content: prev.messages }],
+            messages: '', // ready for next
+            isStreaming: false,
+          };
+        }
+        return { ...prev, isStreaming: false };
+      });
     }
   }, []);
 

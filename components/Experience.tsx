@@ -7,7 +7,6 @@ import CameraRig from './CameraRig';
 import Connections from './Connections';
 import { SelectionState, LifeItem, Category, Dependency } from '../types';
 import { getIslandPosition, getItemWorldPosition } from '../utils/layout';
-import { FloatingRobot } from './FloatingRobot';
 
 interface ExperienceProps {
   data: Category[];
@@ -20,14 +19,6 @@ interface ExperienceProps {
   selectedDependencyId: string | null;
   onSelectDependency: (id: string | null) => void;
   onDeleteDependency: (id: string) => void;
-  isOnboarding: boolean;
-  onOnboardingComplete: () => void;
-
-  // Agent Props
-  agentMessages: string;
-  agentRobotAnimation?: string;
-  isAgentThinking?: boolean;
-  onAgentMessage: (msg: string) => void;
 }
 
 /** Decorative ocean floor plane */
@@ -54,13 +45,7 @@ const Experience: React.FC<ExperienceProps> = ({
   isDarkMode,
   selectedDependencyId,
   onSelectDependency,
-  onDeleteDependency,
-  isOnboarding,
-  onOnboardingComplete,
-  agentMessages,
-  agentRobotAnimation,
-  isAgentThinking,
-  onAgentMessage
+  onDeleteDependency
 }) => {
 
   const handleMiss = () => {
@@ -79,9 +64,6 @@ const Experience: React.FC<ExperienceProps> = ({
     return pos;
   }, [selection, data]);
 
-  // Determine if camera should lock on robot
-  const shouldLockOnRobot = data.length === 0 && isOnboarding;
-
   return (
     <Canvas
       shadows
@@ -91,7 +73,7 @@ const Experience: React.FC<ExperienceProps> = ({
       gl={{ preserveDrawingBuffer: true }}
     >
       {/* Cinematic Camera Controller */}
-      <CameraRig targetPosition={cameraTarget} lockOnRobot={shouldLockOnRobot} />
+      <CameraRig targetPosition={cameraTarget} lockOnRobot={false} />
 
       {/* Lighting */}
       <color attach="background" args={[isDarkMode ? '#020617' : '#f0f9ff']} />
@@ -125,24 +107,18 @@ const Experience: React.FC<ExperienceProps> = ({
 
       {/* Islands */}
       <group position={[0, 0, 0]}>
-          <FloatingRobot
-            onOnboardingComplete={onOnboardingComplete}
-            messages={agentMessages}
-            robotAnimation={agentRobotAnimation}
-            isThinking={isAgentThinking}
-          /> {
-          data.map((category, index) => {
-            const position = getIslandPosition(index, data.length);
-            return (
-              <Island
-                key={category.id}
-                category={category}
-                position={position}
-                selection={selection}
-                onSelect={onBlockClick}
-              />
-            );
-          })}
+        {data.map((category, index) => {
+          const position = getIslandPosition(index, data.length);
+          return (
+            <Island
+              key={category.id}
+              category={category}
+              position={position}
+              selection={selection}
+              onSelect={onBlockClick}
+            />
+          );
+        })}
       </group>
 
       {/* Links / Connections Layer */}

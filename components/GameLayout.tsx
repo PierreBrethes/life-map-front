@@ -8,37 +8,11 @@ import { useCategories, useDependencies, useSettings, useSyncRecurring, useAsset
 import api from '../api/axios';
 import { ItemDetailSidebar } from './sidebar';
 import { useAgentStream } from '../hooks/useAgentStream';
+import { CommandPaletteHub } from './CommandPaletteHub';
 
 const GameLayout: React.FC = () => {
-  // --- ONBOARDING STATE ---
-  const [isOnboarding, setIsOnboarding] = useState(true);
-
   // --- AGENT STREAM ---
-  const { messages, isStreaming, isOnboardingComplete, robotAnimation, sendMessage } = useAgentStream();
-
-  const handleOnboardingComplete = () => {
-    setIsOnboarding(false);
-  };
-
-  // Auto-complete onboarding if agent signals it
-  useEffect(() => {
-    if (isOnboardingComplete && isOnboarding) {
-      const timeout = setTimeout(() => setIsOnboarding(false), 3000);
-      return () => clearTimeout(timeout);
-    }
-  }, [isOnboardingComplete, isOnboarding]);
-
-  // Trigger Onboarding Conversation
-  const hasStartedRef = useRef(false);
-  useEffect(() => {
-    if (isOnboarding && !hasStartedRef.current && !messages) {
-      hasStartedRef.current = true;
-      // Send hidden system prompt to start the flow
-      sendMessage("SYSTEM_TRIGGER: Démarrer l'onboarding pour un nouvel utilisateur. Présente-toi et pose la première question.");
-    }
-  }, [isOnboarding, messages, sendMessage]);
-
-
+  const { messages, conversationHistory, isStreaming, isOnboardingComplete, robotAnimation, sendMessage } = useAgentStream();
   // --- GLOBAL STORE ---
   const {
     selection, setSelection,
@@ -48,6 +22,9 @@ const GameLayout: React.FC = () => {
   } = useStore();
 
   const [activeSidebarData, setActiveSidebarData] = React.useState<typeof selection>(null);
+
+  // HUD Command Palette state
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   // Preserve sidebar data during close animation (prevents content flash)
   useEffect(() => {
@@ -101,7 +78,12 @@ const GameLayout: React.FC = () => {
   // --- SETTINGS SIDE EFFECTS ---
   useEffect(() => {
     if (settings) {
-      document.body.style.backgroundColor = settings.theme === 'dark' ? '#0f172a' : '#e4e4e7';
+      // Toggle classic dark class directly on HTML element so portals/dialogs inherit it
+      if (settings.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     }
   }, [settings]);
 
@@ -184,7 +166,7 @@ const GameLayout: React.FC = () => {
   if (isLoadingCategories) return <div className="w-full h-screen flex items-center justify-center">Loading LifeMap...</div>;
 
   return (
-    <div className={`relative w-full h-screen overflow-hidden transition-colors duration-500 ${isDarkMode ? 'dark bg-slate-950' : 'bg-[#f0f9ff]'}`}>
+    <div className="relative w-full h-screen overflow-hidden transition-colors duration-500 bg-background">
 
       {/* 3D Layer */}
       <div className="absolute inset-0 z-0">
@@ -203,13 +185,6 @@ const GameLayout: React.FC = () => {
             selectedDependencyId={selectedDependencyId}
             onSelectDependency={selectDependency}
             onDeleteDependency={handleDeleteDependency}
-            isOnboarding={isOnboarding && categories.length === 0}
-            onOnboardingComplete={handleOnboardingComplete}
-            // Agent Props
-            agentMessages={messages}
-            agentRobotAnimation={robotAnimation || undefined}
-            isAgentThinking={isStreaming}
-            onAgentMessage={(msg) => {/* Parent handles input */ }}
           />
         </Suspense>
       </div>
@@ -226,12 +201,20 @@ const GameLayout: React.FC = () => {
           onSelect={handleBlockClick}
           onUpdateItem={handleUpdateItem}
           onDelete={handleDeleteElement}
-          // Agent Props
           isAgentStreaming={isStreaming}
-          isOnboarding={isOnboarding && categories.length === 0}
           onAgentMessage={sendMessage}
         />
       </div>
+
+      {/* Taquito Spotlight Hub */}
+      <CommandPaletteHub
+        isOpen={isCommandPaletteOpen}
+        onOpenChange={setIsCommandPaletteOpen}
+        currentStream={messages}
+        conversationHistory={conversationHistory}
+        isStreaming={isStreaming}
+        onSendAgentMessage={sendMessage}
+      />
 
       {/* Sidebar (Overlay on the right) */}
       <div
