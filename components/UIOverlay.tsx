@@ -43,6 +43,7 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
     const [modalMode, setModalMode] = useState<ModalMode>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<{ categoryName: string, item: LifeItem }[]>([]);
@@ -50,6 +51,14 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
     const { updateSettings } = useLifeMapMutations();
 
     const isDark = settings.theme === 'dark';
+
+    // Close the "+" menu when clicking outside
+    useEffect(() => {
+        if (!isPlusMenuOpen) return;
+        const handleClickOutside = () => setIsPlusMenuOpen(false);
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [isPlusMenuOpen]);
 
     const glassPanelClass = isDark
         ? "bg-slate-900/80 backdrop-blur-xl border-slate-700/50 text-white"
@@ -269,80 +278,102 @@ const UIOverlay: React.FC<UIOverlayProps> = ({
 
 
                 {/* === MAIN APP BOTTOM BAR === */}
-                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-auto pointer-events-auto z-40 flex items-center gap-4">
+                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-auto pointer-events-auto z-40 flex items-end gap-3">
 
-                    {/* Button to open Taquito Command Palette */}
-                    <div className={`flex items-center gap-2 border p-1 rounded-full shadow-xl ring-1 ring-gray-900/5 h-[50px] ${glassPanelClass}`}>
+                    {/* LEFT: Connections group */}
+                    <div className={`flex items-center gap-1 border p-1.5 rounded-2xl shadow-xl ring-1 ring-gray-900/5 ${glassPanelClass}`}>
+                        {/* Toggle connections visibility */}
+                        <button
+                            onClick={toggleConnections}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-sm transition-all active:scale-95 whitespace-nowrap ${showConnections
+                                ? (isDark ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/50' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200')
+                                : (isDark ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-300' : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600')
+                                }`}
+                            title={showConnections ? "Masquer les liens" : "Afficher les liens"}
+                        >
+                            <Icons.Link2 size={16} />
+                        </button>
+
+                        <div className={`w-px h-5 ${isDark ? 'bg-slate-700' : 'bg-gray-200'}`} />
+
+                        {/* Add connection */}
+                        <button
+                            onClick={connectionMode === 'idle' ? () => startConnection(selection || undefined) : cancelConnection}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-medium text-sm transition-all active:scale-95 whitespace-nowrap ${connectionMode !== 'idle'
+                                ? 'bg-red-500 hover:bg-red-600 text-white'
+                                : (isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700')
+                                }`}
+                            title={connectionMode !== 'idle' ? 'Annuler le lien' : 'Nouveau lien'}
+                        >
+                            {connectionMode !== 'idle'
+                                ? <><Icons.X size={16} /><span>Annuler</span></>
+                                : <Icons.Network size={16} />
+                            }
+                        </button>
+                    </div>
+
+                    {/* CENTER: Taquito — primary entry point */}
+                    <div className={`flex items-center border p-1.5 rounded-2xl shadow-2xl ring-1 ring-gray-900/5 ${glassPanelClass}`}>
                         <button
                             onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/50 hover:bg-indigo-500/40' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200 hover:bg-indigo-100'}`}
+                            className={`flex items-center gap-2.5 px-7 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 whitespace-nowrap shadow-lg ${isDark
+                                ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-900/40'
+                                : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-200'
+                                }`}
                             title="Ouvrir Taquito (Ctrl+K)"
                         >
-                            <Icons.Sparkles size={18} className={isAgentStreaming ? "animate-spin" : "animate-pulse"} />
+                            <Icons.Sparkles
+                                size={18}
+                                className={isAgentStreaming ? 'animate-spin' : 'animate-pulse'}
+                            />
                             <span>Taquito</span>
                         </button>
                     </div>
 
-                    {/* Group 1: Connections */}
-                    <div className={`flex items-center gap-2 border p-2 rounded-full shadow-xl ring-1 ring-gray-900/5 ${glassPanelClass}`}>
+                    {/* RIGHT: Fallback manual actions — compact "+" menu */}
+                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                        <div className={`flex items-center border p-1.5 rounded-2xl shadow-xl ring-1 ring-gray-900/5 ${glassPanelClass}`}>
+                            <button
+                                onClick={() => setIsPlusMenuOpen(prev => !prev)}
+                                className={`flex items-center justify-center w-9 h-9 rounded-xl font-medium text-sm transition-all active:scale-95 ${isPlusMenuOpen
+                                    ? (isDark ? 'bg-slate-700 text-white' : 'bg-gray-200 text-gray-900')
+                                    : (isDark ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700')
+                                    }`}
+                                title="Actions manuelles"
+                            >
+                                <Icons.Plus size={18} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
+                            </button>
+                        </div>
 
-                        {/* TOGGLE CONNECTIONS BUTTON */}
-                        <button
-                            onClick={toggleConnections}
-                            className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${showConnections
-                                ? (isDark ? 'bg-indigo-500/20 text-indigo-300 ring-1 ring-indigo-500/50' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200')
-                                : (isDark ? 'bg-slate-800 text-slate-500 hover:bg-slate-700' : 'bg-gray-50 text-gray-400 hover:bg-gray-100')
-                                }`}
-                            title={showConnections ? "Masquer les liens" : "Afficher les liens"}
-                        >
-                            <Icons.Link2 size={18} />
-                        </button>
-
-                        <div className={`w-px h-6 mx-1 ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`}></div>
-
-                        {/* ADD CONNECTION BUTTON */}
-                        <button
-                            onClick={connectionMode === 'idle' ? () => startConnection(selection || undefined) : cancelConnection}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${connectionMode !== 'idle'
-                                ? 'bg-red-500 hover:bg-red-600 text-white shadow-md shadow-red-500/20'
-                                : (isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-700')
-                                }`}
-                        >
-                            {connectionMode !== 'idle' ? <Icons.X size={18} /> : <Icons.Network size={18} />}
-                            <span>{connectionMode !== 'idle' ? 'Annuler' : 'Nouveau Lien'}</span>
-                        </button>
-                    </div>
-
-                    {/* Group 2: Creation */}
-                    <div className={`flex items-center gap-2 border p-2 rounded-full shadow-xl ring-1 ring-gray-900/5 ${glassPanelClass}`}>
-                        {/* MANAGE ISLANDS BUTTON */}
-                        <button
-                            onClick={() => setIslandManagementOpen(true)}
-                            className={`flex items-center gap-2 px-3 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-700'}`}
-                            title="Gérer mes îles"
-                        >
-                            <Icons.Settings2 size={18} />
-                        </button>
-
-                        <div className={`w-px h-6 mx-1 ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`}></div>
-
-                        {/* ADD CATEGORY BUTTON */}
-                        <button
-                            onClick={() => setModalMode('category')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-slate-200' : 'bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700'}`}
-                        >
-                            <Icons.Layers size={18} />
-                            <span>Nouvelle Île</span>
-                        </button>
-
-                        {/* ADD ITEM BUTTON */}
-                        <button
-                            onClick={() => setModalMode('item')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-sm transition-all active:scale-95 whitespace-nowrap ${isDark ? 'bg-slate-800 hover:bg-indigo-900/50 hover:text-indigo-300 text-slate-200' : 'bg-gray-50 hover:bg-indigo-50 hover:text-indigo-600 text-gray-700'}`}
-                        >
-                            <Icons.Plus size={18} />
-                            <span>Ajouter Bloc</span>
-                        </button>
+                        {/* Dropdown menu */}
+                        {isPlusMenuOpen && (
+                            <div className={`absolute bottom-full mb-2 right-0 w-48 rounded-2xl border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 origin-bottom-right ${glassPanelClass}`}>
+                                <div className="py-1">
+                                    <button
+                                        onClick={() => { setModalMode('category'); setIsPlusMenuOpen(false); }}
+                                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors ${isDark ? 'hover:bg-slate-700/80 text-slate-200' : 'hover:bg-gray-100 text-gray-700'}`}
+                                    >
+                                        <Icons.Layers size={16} className={isDark ? 'text-indigo-400' : 'text-indigo-500'} />
+                                        Nouvelle Île
+                                    </button>
+                                    <button
+                                        onClick={() => { setModalMode('item'); setIsPlusMenuOpen(false); }}
+                                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors ${isDark ? 'hover:bg-slate-700/80 text-slate-200' : 'hover:bg-gray-100 text-gray-700'}`}
+                                    >
+                                        <Icons.Plus size={16} className={isDark ? 'text-indigo-400' : 'text-indigo-500'} />
+                                        Ajouter Bloc
+                                    </button>
+                                    <div className={`my-1 mx-3 h-px ${isDark ? 'bg-slate-700' : 'bg-gray-100'}`} />
+                                    <button
+                                        onClick={() => { setIslandManagementOpen(true); setIsPlusMenuOpen(false); }}
+                                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors ${isDark ? 'hover:bg-slate-700/80 text-slate-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                                    >
+                                        <Icons.Settings2 size={16} />
+                                        Gérer les îles
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
